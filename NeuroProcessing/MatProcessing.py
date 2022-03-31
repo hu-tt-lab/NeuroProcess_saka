@@ -1,6 +1,8 @@
 import numpy as np
 
 def diff_by_block(base,compare,block_size):
+    # 長い配列を部分ごとに区切って足す
+    # メモリ的な余裕ができる
     if len(base)!=len(compare):
         print("base and compare must be same langth")
         return 
@@ -15,3 +17,4 @@ def diff_by_block(base,compare,block_size):
             ans[i*block_size:len(base)]+=partial
         i+=1
     return ans
+
