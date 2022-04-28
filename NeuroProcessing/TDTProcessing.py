@@ -14,4 +14,6 @@ def read_tdtcsv(filename):
     else:
         datanames=[f"{i} {j}dB-{k}" for i,j,k in zip(df["Sub. ID"], df[dB_name], df["Rec No."])]
         warnings.warn(f"音圧でデータを区別できません、同一の音圧データが含まれています")
+    for i,j in enumerate(datanames):
+        waveforms[j] = list(df.iloc[i,[*list(range(data_head,column-1))]])
     return waveforms

@@ -1,5 +1,8 @@
 from Setting import PlotSetting
 import numpy as np
+from matplotlib import pyplot as plt
+import os
+import gc
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)
@@ -75,6 +78,77 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
         i+=1
     return timestamp
 
+def plot_abr(abr_dic,title,dir_name,ylim):
+    abr_dic=dict(sorted(abr_dic.items(),reverse=True))
+    fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=[10,6])
+    fig.patch.set_facecolor('white')
+    fig.suptitle(title)
+    fig.supxlabel("Time from Stimulation (ms)")
+    #fig.supylabel("stim type")
+    xlim=[0,20]
+    
+    plot_event(fig,axes,xlim)
+    if "TDT" in dir_name:
+        samplerate=25000
+    else:
+        samplerate=40000
+    plot_abrs(abr_dic,axes,ylim,samplerate)
+    if not (os.path.exists("./abr_images/")):
+        os.mkdir("./abr_images")
+    fig.savefig(f"./abr_images/{dir_name}_{title}.png")
+
+def plot_abrs(data,axes,ylim,samplerate):
+    i=0
+    keys=data.keys()
+    values=data.values()
+    for key,value in zip(keys,values):
+        xlim=[0,20]
+        #sampling_rate
+        wave=value[:int(xlim[1]*samplerate/1000)]
+        # Set limits and label
+        axes[i].set_facecolor("#ffffff00")
+        axes[i].set_xlim(xlim[0],xlim[1])
+        axes[i].set_ylim(ylim[0],ylim[1])
+        axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
+        # Plot base line
+        axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
+        # Plot waveform
+        time=np.arange(xlim[0],xlim[1],1/(samplerate/1000))
+        if len(wave)<=len(time):
+            time=time[:len(wave)]
+        axes[i].plot(time, wave, color="k", clip_on=False,)
+        # Format spines and ticks
+        if i == len(keys)-1:
+            axes[i].spines['top'].set_visible(False)
+            axes[i].spines['left'].set_visible(False)
+            axes[i].spines['bottom'].set_visible(False)
+            axes[i].spines['right'].set_position(("outward", 10))
+            axes[i].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+            axes[i].yaxis.tick_right()
+            axes[i].set_yticks([ylim[0], 0, ylim[1]])
+            axes[i].set_yticklabels([str(ylim[0]), "0 μV", str(ylim[1])])
+        else:
+            format_axis(axes[i])
+        i+=1
+    return
 
 
+def plot_lfp(lfp_data,channelmap,ylim,param):
+    fig, axes = plt.subplots(nrows=len(channelmap), sharex=True, figsize=[9,6])
+    title=f"LFP {param}"
+    fig.patch.set_facecolor('white')
+    fig.suptitle(title)
+    fig.supxlabel("Time from Stimulation (ms)")
+    fig.supylabel("Depth from Bran Surface (µm)")
+    xlim=[-50,350]
+    plot_event(fig, axes, xlim)
+    plot_channels(lfp_data,axes,channelmap,ylim)
+    if not(os.path.exists("./wave_plot")):
+        os.mkdir("./wave_plot")
+    fig.savefig(f'./wave_plot/lfp_{param}.png')
+    fig.clear()
+    plt.close(fig)
+    del axes
+    del fig
+    gc.collect()
 

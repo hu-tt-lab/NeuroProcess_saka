@@ -67,3 +67,46 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,setting_instance):
         each_ch_wave*=1000
         datas.append(each_ch_wave)
     return datas
+
+def process_abr(plx_filepath,xlim,is_diff):
+    mat_data=scipy.io.loadmat(plx_filepath)
+    samplerate=40000
+    event_ch_name="EVT01"
+    if event_ch_name in mat_data:
+        trigger_wave = mat_data["EVT01"]
+        trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
+        #sオーダーで刺激印加時間があるためindex表記に直す
+        timestamp = list(round(trigger_wave[i]-mat_data["SPKC17_ts"][0][0],6)*samplerate for i in range(len(trigger_wave)))
+        timestamp = list(map(int,timestamp))
+    else:
+        trigger_wave= mat_data[f"SPKC{str(32).zfill(2)}"]
+        trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
+        timestamp=get_timestamp_from_law_ch(trigger_wave,0.05,0.08,samplerate)
+    if is_diff:
+        active_name="SPKC18"
+        reference_name="SPKC19"
+        active_channel_wave=mat_data[active_name]
+        active_channel_wave=np.array(list(active_channel_wave[j][0] for j in range(len(active_channel_wave))))
+        reference_channel_wave=mat_data[reference_name]
+        reference_channel_wave=np.array(list(reference_channel_wave[j][0] for j in range(len(reference_channel_wave))))
+        each_channel_wave=diff_by_block(active_channel_wave,reference_channel_wave,10000)
+    else:
+        spkc_name = f"SPKC17"
+        each_channel_wave = mat_data[spkc_name]
+        each_channel_wave = list(
+            each_channel_wave[j][0] for j in range(len(each_channel_wave)))
+    filter_range=[3000,4000]
+    each_channel_wave=lowpass(each_channel_wave,samplerate,filter_range[0],filter_range[1],3,30)
+    offset=xlim[0]
+    onset=xlim[1]
+    total_wave=np.zeros(abs(int((onset-offset)*samplerate/1000)))
+    index=0
+    for timepoint in timestamp:
+        each_wave=np.array(each_channel_wave[timepoint+int(offset*samplerate/1000):timepoint+int(onset*samplerate/1000)])
+        total_wave+=each_wave
+        index+=1
+    #加算回数で割ってμVに直す
+    total_wave/=index
+    total_wave*=1000
+    return total_wave
+        

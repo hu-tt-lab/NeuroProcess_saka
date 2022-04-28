@@ -1,5 +1,6 @@
 from scipy import ndimage,interpolate,signal
 import numpy as np
+from scipy import fftpack
 #bandpass_filterの設定
 def bandpass(x, samplerate, fp, fs, gpass, gstop):
     fn = samplerate / 2                           #ナイキスト周波数
@@ -29,6 +30,21 @@ def highpass(x, samplerate, fp, fs, gpass, gstop):
     y = signal.filtfilt(b, a, x)                  #信号に対してフィルタをかける
     return y 
 
+def notchpass(x,threshold,samplerate) -> np.ndarray:
+    """
+    フーリエ変換を使用したノッチフィルタ
+
+    :param x: 波形
+    :param threshold: カットする周波数閾値，低周波/高周波の順に並んだものを受け取る
+    """
+    if threshold[0] > threshold[1]:
+        raise ValueError()
+    spectral = fftpack.fft(x, axis=0)
+    index =  len(x)/samplerate* np.array(threshold)
+    index = np.array(index,dtype="int64")
+    spectral[index[0]:index[1]] = 0
+    spectral[-index[1]:-index[0]] = 0
+    return fftpack.ifft(spectral, axis=0).real
 
 def source(wave, d: float=0.05):
     # 0.3は脳に置ける電流の伝導率
