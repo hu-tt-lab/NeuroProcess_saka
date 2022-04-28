@@ -41,11 +41,12 @@ class NumpyEncoder(json.JSONEncoder):
 class PlotSetting():
     def __init__(self):
         with open("setting.json") as setting_file:
-            self.xlim: list[float] = setting_file["xlim"]
-            self.ylim: list[float] = setting_file["ylim"]
-            self.channelmap: list[int] =setting_file["channelmap"]
-            self.samplerate: int = setting_file["samplerate"]
-            self.linewidth = setting_file["linewidth"]
-            self.xlabel = setting_file["xlabel"]
-            self.ylabel = setting_file["ylabel"]
+            params=json.load(setting_file)
+            self.xlim: list[float] = params["xlim"]
+            self.ylim: list[float] = params["ylim"]
+            self.channelmap: list[int] =params["channelmap"]
+            self.samplerate: int = params["samplerate"]
+            self.linewidth = params["linewidth"]
+            self.xlabel = params["xlabel"]
+            self.ylabel = params["ylabel"]
             
