@@ -40,7 +40,7 @@ class NumpyEncoder(json.JSONEncoder):
 
 class PlotSetting():
     def __init__(self):
-        with open("setting.json") as setting_file:
+        with open("json/setting.json") as setting_file:
             params=json.load(setting_file)
             self.xlim: list[float] = params["xlim"]
             self.ylim: list[float] = params["ylim"]
