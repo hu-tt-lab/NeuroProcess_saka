@@ -46,7 +46,17 @@ class PlotSetting():
             self.ylim: list[float] = params["ylim"]
             self.channelmap: list[int] =params["channelmap"]
             self.samplerate: int = params["samplerate"]
-            self.linewidth = params["linewidth"]
-            self.xlabel = params["xlabel"]
-            self.ylabel = params["ylabel"]
-            
+            self.linewidth: float = params["linewidth"]
+            self.xlabel: str= params["xlabel"]
+            self.ylabel: str = params["ylabel"]
+            self.title = params["title"]
+
+# class for waveform
+# testing class
+class WaveSetting:
+    def __init__(self) -> None:
+        with open("setting_json/wave_setting.json") as setting_file:
+            params=json.load(setting_file)
+            self.samplerate: int = params["samplerate"]
+            self.time_prefix : str = params["time_prefix"]
+            self.voltage_prefix: str = params["voltage_prefix"]

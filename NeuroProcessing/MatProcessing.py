@@ -32,7 +32,7 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
 
 
 def process_lfp_from_FP_ch(plx_filepath,offset,onset,setting_instance):
-        #取得したpathを元にLFP波形を取得・加算平均を行う
+    #取得したpathを元にLFP波形を取得・加算平均を行う
     mat_data=scipy.io.loadmat(plx_filepath)
     #timestampの取得
     spkc_samplerate=setting_instance.spkc_samplerate
