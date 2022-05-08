@@ -49,7 +49,7 @@ class PlotSetting():
             self.linewidth: float = params["linewidth"]
             self.xlabel: str= params["xlabel"]
             self.ylabel: str = params["ylabel"]
-            self.title = params["title"]
+            self.title : str = params["title"]
 
 # class for waveform
 # testing class
@@ -60,3 +60,13 @@ class WaveSetting:
             self.samplerate: int = params["samplerate"]
             self.time_prefix : str = params["time_prefix"]
             self.voltage_prefix: str = params["voltage_prefix"]
+            self.timespan : list[int] = params["timespan"]
+
+class RecordSetting:
+    def __init__(self) -> None:
+        with open("setting/record_setting.json") as setting_file:
+            params=json.load(setting_file)
+            self.spkc_samplerate: int = params["spkc_samplerate"]
+            self.event_ch : str = params["event_ch"]
+            self.lfp_ts_ch: str = params["lfp_ts_ch"]
+            

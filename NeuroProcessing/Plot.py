@@ -1,8 +1,12 @@
-from Setting import PlotSetting
 import numpy as np
 from matplotlib import pyplot as plt
 import os
 import gc
+
+# import own function
+from Setting import PlotSetting
+from MatProcessing import reshape_lfps
+from Filter import gradient_double,spline
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)
@@ -152,3 +156,66 @@ def plot_lfp(lfp_data,channelmap,ylim,param):
     del fig
     gc.collect()
 
+def plot_csd(lfp_data,channelmap,xlim,vrange,param):
+    reshape_datas=reshape_lfps(lfp_data,channelmap)
+    reshape_datas=np.flipud(reshape_datas)
+    #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
+    gradient= gradient_double(reshape_datas)
+    inter_length=np.arange(len(gradient))
+    csd=spline(gradient,5,0)
+    vrange=vrange
+    fig=plt.figure()
+    xlim=[-50,350]
+    fig=plt.figure(facecolor="white")
+    ax=fig.add_subplot(111)
+    x = np.linspace(xlim[0] , xlim[1], len(csd[0]))
+    y = np.linspace( 25, 725, len(csd))
+    X,Y=np.meshgrid(x,y[::-1])
+    pcm=ax.pcolormesh(X,Y,csd,cmap="jet", shading="auto",vmax=vrange, vmin=-vrange,rasterized=True)
+    plt.colorbar(pcm,label="[μV/mm$^2$]")
+    ax.invert_yaxis()
+    ax.set_yticks(np.arange(50,750,50))
+    ax.set_ylabel("depth[μm]")
+    ax.set_xlabel("time from stimulation[ms]")
+    if not(os.path.exists("./csd_fig")):
+        os.mkdir("./csd_fig")
+    title=f"csd_{param}"
+    plt.title(title)
+    plt.savefig(f'./csd_fig/{title}.png')
+    plt.clf()
+    plt.close()
+    gc.collect()
+    
+def plot_fourier_spectal_from_dic(dic,dir_name,xlim,samplerate):
+    if not os.path.exists("./fourier_spectrum"):
+        os.mkdir("./fourier_spectrum")
+    if not os.path.exists(f"./fourier_spectrum/{dir_name}"):
+        os.mkdir(f"./fourier_spectrum/{dir_name}")
+    for key,value in dic.items():
+        fig=plt.figure()
+        ax=fig.add_subplot(111)
+        ax.plot(111)
+        point=len(value)
+        d=1/samplerate
+        F=np.fft.fft(value,n=point)
+        freq=np.fft.fftfreq(n=point,d=d)
+        Amp=np.abs(F/(point/2))
+        left_point=np.where(freq==freq[freq>=xlim[0]][0])[0][0]
+        right_point=np.argmax(freq[freq<=xlim[1]])
+        xlim_point=[left_point,right_point]
+        ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]],color="k")
+        ax.set_ylim(0,np.max(Amp[xlim_point[0]:xlim_point[1]]))
+        ax.set_xlabel("Freqency [Hz]")
+        ax.set_ylabel("Amplitude")
+        if "\n" in key:
+            title=key.replace("\n","")
+        else:
+            title=key
+        ax.set_title(title)
+        plt.savefig(f"./fourier_spectrum/{dir_name}/{title}.png")
+        plt.cla()
+        plt.clf()
+        plt.close(fig)
+        del ax,fig
+        gc.collect()
+    return

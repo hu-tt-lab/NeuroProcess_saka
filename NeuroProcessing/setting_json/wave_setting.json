@@ -1,5 +1,6 @@
 {
     "samplerate":40000,
     "time_prefix": "ms",
-    "voltage_prefix" : "μV"
+    "voltage_prefix" : "μV",
+    "timespan": [-50,350]
 }

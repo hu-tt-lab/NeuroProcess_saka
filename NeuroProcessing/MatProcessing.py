@@ -1,9 +1,11 @@
+import wave
 import numpy as np
 import scipy.io
 from scipy import signal
 
 #import own function
 from Filter import lowpass
+from Setting import PlotSetting, RecordSetting, WaveSetting
 
 def diff_by_block(base,compare,block_size):
     # 長い配列を部分ごとに区切って足す
@@ -34,12 +36,14 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
     return timestamp
 
 
-def process_lfp_from_FP_ch(plx_filepath,offset,onset,setting_instance):
+def process_lfp_from_FP_ch(plx_filepath,wave_setting:RecordSetting,record_setting:WaveSetting):
     #取得したpathを元にLFP波形を取得・加算平均を行う
     mat_data=scipy.io.loadmat(plx_filepath)
     #timestampの取得
-    spkc_samplerate=setting_instance.spkc_samplerate
-    event_ch_name=setting_instance.event_ch
+    spkc_samplerate=record_setting.spkc_samplerate
+    event_ch_name=record_setting.event_ch
+    offset=wave_setting.timespan[0]
+    onset=wave_setting.timespan[1]
     if event_ch_name in mat_data:
         trigger_wave = mat_data[event_ch_name]
         trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
@@ -47,7 +51,7 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,setting_instance):
         timestamp_fp = list(round(trigger_wave[i]-float(mat_data["FP01_ts"][0]),3)*1000 for i in range(len(trigger_wave)))
         timestamp_fp = list(map(int,timestamp_fp))
     else:
-        trigger_wave= mat_data[setting_instance.low_trigger_ch]
+        trigger_wave= mat_data[record_setting.low_trigger_ch]
         trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
         spkc_timestamp=get_timestamp_from_law_ch(trigger_wave,0.05,0.3,spkc_samplerate)
         timestamp_time=(np.array(spkc_timestamp)+(mat_data["FP01_ts"][0]-mat_data["SPKC20_ts"][0])*spkc_samplerate)/(spkc_samplerate//1000)
@@ -59,10 +63,10 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,setting_instance):
         each_channel_wave = list(
             each_channel_wave[j][0] for j in range(len(each_channel_wave)))
         index = 0
-        each_ch_wave=np.zeros(onset+offset)
+        each_ch_wave=np.zeros(np.abs(onset)+np.abs(offset))
         for timepoint in timestamp_fp:
             each_wave = np.array(
-                each_channel_wave[timepoint-offset:timepoint+onset])
+                each_channel_wave[timepoint+offset:timepoint+onset])
             each_ch_wave+=each_wave
             index+=1
         #加算回数で割ってμVに直す
@@ -112,4 +116,17 @@ def process_abr(plx_filepath,xlim,is_diff):
     total_wave/=index
     total_wave*=1000
     return total_wave
-        
+
+def reshape_lfps(lfp_data,channelmap):
+    all_waveform=[]
+    for channel in channelmap:
+        wave=np.array(lfp_data[channel-1]) 
+        if len(all_waveform)==0:
+            all_waveform=np.array([wave])
+        else:
+            all_waveform=np.vstack([all_waveform,wave])
+    return all_waveform
+
+#test code
+if __name__ == "__main__":
+    record_setting=RecordSetting()

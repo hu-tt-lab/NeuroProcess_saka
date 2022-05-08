@@ -8,7 +8,7 @@ from DataIO import *
 from Filter import *
 from MatProcessing import *
 from OscilloProcessing import *
-from Plot import *
+from Plot import plot_abr,plot_lfp,plot_csd,plot_fourier_spectal_from_dic
 from Setting import *
 from TDTProcessing import *
 
