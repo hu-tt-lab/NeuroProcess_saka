@@ -1,0 +1,5 @@
+{
+    "samplerate":40000,
+    "time_prefix": "ms",
+    "voltage_prefix" : "μV"
+}

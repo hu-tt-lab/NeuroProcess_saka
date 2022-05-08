@@ -2,6 +2,9 @@ import numpy as np
 import scipy.io
 from scipy import signal
 
+#import own function
+from Filter import lowpass
+
 def diff_by_block(base,compare,block_size):
     # 長い配列を部分ごとに区切って足す
     # メモリ的な余裕ができる
