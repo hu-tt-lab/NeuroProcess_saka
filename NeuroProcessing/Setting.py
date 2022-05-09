@@ -50,6 +50,8 @@ class PlotSetting():
             self.xlabel: str= params["xlabel"]
             self.ylabel: str = params["ylabel"]
             self.title : str = params["title"]
+            self.lfp_ylim: list[float] = params["lfp_ylim"]
+            self.abr_ylim: list[float] = params["abr_ylim"]
 
 # class for waveform
 # testing class

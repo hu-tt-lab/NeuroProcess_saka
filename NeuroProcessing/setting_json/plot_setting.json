@@ -5,5 +5,7 @@
   "linewidth" : 2,
   "xlabel" : "time from stimulation[ms]",
   "ylabel" : "depth[μm]",
-  "title": "Waveplot"
+  "title": "Waveplot",
+  "lfp_ylim" : [-200,200],
+  "abr_ylim" : [-1,1]
 }

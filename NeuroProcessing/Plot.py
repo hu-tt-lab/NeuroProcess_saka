@@ -41,10 +41,7 @@ def format_axis(ax):
         labelbottom=False) # labels along the bottom edge are off
     return
 
-def plot_channels(line,axes,setting_instance:PlotSetting, prefix: str):
-    channelmap= setting_instance.channelmap
-    ylim=setting_instance.ylim
-    xlim=setting_instance.xlim
+def plot_channels(line,axes,channelmap,xlim,ylim,voltage_prefix: str):
     for ch_count,channel in enumerate(channelmap,1):
         wave=np.array(line[channel-1])
         i = ch_count-1
@@ -67,7 +64,7 @@ def plot_channels(line,axes,setting_instance:PlotSetting, prefix: str):
             axes[i].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
             axes[i].yaxis.tick_right()
             axes[i].set_yticks([ylim[0], 0, ylim[1]])
-            axes[i].set_yticklabels([ylim[0], f"0{prefix}V", ylim[1]])
+            axes[i].set_yticklabels([ylim[0], f"0{voltage_prefix}", ylim[1]])
         else:
             format_axis(axes[i])
     return

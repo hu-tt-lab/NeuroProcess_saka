@@ -36,14 +36,12 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
     return timestamp
 
 
-def process_lfp_from_FP_ch(plx_filepath,wave_setting:RecordSetting,record_setting:WaveSetting):
+def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:WaveSetting):
     #取得したpathを元にLFP波形を取得・加算平均を行う
     mat_data=scipy.io.loadmat(plx_filepath)
     #timestampの取得
     spkc_samplerate=record_setting.spkc_samplerate
     event_ch_name=record_setting.event_ch
-    offset=wave_setting.timespan[0]
-    onset=wave_setting.timespan[1]
     if event_ch_name in mat_data:
         trigger_wave = mat_data[event_ch_name]
         trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
