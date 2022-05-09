@@ -1,3 +1,5 @@
+from collections import defaultdict
+import re
 import struct
 from decimal import *
 import csv
@@ -5,6 +7,10 @@ import gc
 import math
 import os
 from tokenize import String
+import numpy as np
+import pandas as pd
+
+from pathlib2 import Path
 
 # Global variables
 INT_BYTE_LEN = 4
@@ -192,4 +198,72 @@ def bin_to_csv(file,csv_filename,dir_name = None):
             writer.writerows(csv_ch_time_volt)
             del csv_ch_time_volt
             gc.collect()
-  
+
+def rename_oscillo_bin_files(bin_files: list[Path],day_join_hyphen="1998-10-14"):
+    if len(bin_files) >= 100:
+        zfill_num=3
+    else:
+        zfill_num=2
+    # file名を0埋め
+    num_after_100=101
+    for bin_file in bin_files:
+        try:
+            if day_join_hyphen in bin_file.name:
+                num=str(num_after_100).zfill(zfill_num)
+                num=f"({num})"
+                date_info=re.search(f"- {day_join_hyphen}T[0-9]+.[0-9]+",bin_file.name).group(0)
+                os.rename(bin_file,f"{bin_file.parent}\{bin_file.name.replace(date_info,num)}")
+                num_after_100+=1
+            else:
+                num=re.search("[0-9]+",bin_file.name).group(0)
+                os.rename(bin_file,f"{bin_file.parent}\{bin_file.name.replace(num,str(num).zfill(zfill_num))}")
+        except:
+            num="0".zfill(zfill_num)
+            num=f"({num})"
+            os.rename(bin_file,f"{bin_file.parent}\{bin_file.name.replace('.bin',' '+num+'.bin')}")
+
+def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_table):
+    """_summary_
+
+    Args:
+        data_dir (Path): _description_
+        order_table (Pandas.Dataframe): _description_
+    """
+    #　各波形データとorder_tableの対応付け
+    index=0
+    if not(os.path.exists("./waveplot")):
+        os.mkdir("./waveplot")
+    if not(os.path.exists(f"./waveplot/{data_dir.name}")):
+        os.mkdir(f"./waveplot/{data_dir.name}")
+    dir_path=f"./waveplot/{data_dir.name}" 
+    bin_files=list(data_dir.glob("*"))
+    counts=defaultdict(int)
+    for bin_file in bin_files:
+        line=order_table.iloc[index]
+        if line["state"]=="click":
+            title=f'{line["db"]}'
+        elif line["state"]=="us_burst":
+            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
+        elif line["state"]=="us_cont":
+            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
+            
+        if title in counts:
+            counts[title]+=1
+        else:
+            counts[title]=0
+            
+        title=f"{title}_{counts[title]}"
+        print(title)        
+        time_volt_data=bin_to_csv(bin_file,f"{title}.csv",str(data_dir.name))
+        index+=1
+        del time_volt_data
+        gc.collect()
+
+def load_wave_from_oscillo_csv(file_path: str):
+    #各CSVファイルを読み込んで波形と時間データを出力
+    data = pd.read_csv(file_path,header=6,names=["Source","CH1","CH2"])
+    time=data["Source"].values
+    time=np.array(list(map(float,time)))*1000
+    voltage=data["CH1"].values
+    voltage=np.array(list(map(float,voltage)))
+    return time,voltage

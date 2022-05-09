@@ -219,3 +219,35 @@ def plot_fourier_spectal_from_dic(dic,dir_name,xlim,samplerate):
         del ax,fig
         gc.collect()
     return
+
+def plot_wave(axes,index,time_datas,volt_datas,xlim,title):
+    row=index[0]
+    col=index[1]
+    ax=axes[row][col]
+    time_datas=np.array(time_datas)
+    ax.plot(time_datas,volt_datas)
+    ax.set_xlim(xlim)
+    if max(volt_datas)<=0.5:
+        ax.set_ylim[-0.5,0.5]
+    ax.set_xlabel("time from stimulation[ms]")
+    ax.set_ylabel("voltage [V]")
+    ax.set_title(title)
+
+def plot_fft(axes,index,volt_datas,samplerate,xlim,title):
+    #振幅スペクトルを描画する
+    row=index[0]
+    col=index[1]
+    ax=axes[row][col]
+    point=len(volt_datas)
+    d=1/samplerate
+    point=len(volt_datas)
+    F=np.fft.fft(volt_datas,n=point)
+    freq=np.fft.fftfreq(n=point,d=d)
+    Amp=np.abs(F/(point/2))
+    left_point=np.argmin(freq[freq>=xlim[0]])
+    right_point=np.argmax(freq[freq<=xlim[1]])
+    xlim_point=[left_point,right_point]
+    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]])
+    ax.set_xlabel("Freqency [Hz]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title(title)
