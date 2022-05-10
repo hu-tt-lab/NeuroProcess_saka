@@ -5,12 +5,12 @@
 from collections import defaultdict
 
 # import original methods
-from Filter import *
-from MatProcessing import *
-from OscilloProcessing import bin_to_csv
-from Plot import plot_abr, plot_lfp, plot_csd, plot_fourier_spectal_from_dic, plot_wave, plot_fft
-from Setting import *
-from TDTProcessing import *
+from NeuroProcessing.Filter import *
+from NeuroProcessing.MatProcessing import *
+from NeuroProcessing.OscilloProcessing import bin_to_csv
+from NeuroProcessing.Plot import plot_abr, plot_lfp, plot_csd, plot_fourier_spectal_from_dic, plot_wave, plot_fft
+from NeuroProcessing.Setting import *
+from NeuroProcessing.TDTProcessing import *
 
 def get_abr_data_from_mat_file_dir(dir_path: Path,setting_instance: PlotSetting):
     # 各波形から最大の振幅を取り出し、それを統計量として各加算回数による低下を描画

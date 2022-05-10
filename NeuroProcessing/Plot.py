@@ -4,9 +4,9 @@ import os
 import gc
 
 # import own function
-from Setting import PlotSetting
-from MatProcessing import reshape_lfps
-from Filter import gradient_double,spline
+from NeuroProcessing.Setting import PlotSetting
+from NeuroProcessing.MatProcessing import reshape_lfps
+from NeuroProcessing.Filter import gradient_double,spline
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)

@@ -4,8 +4,8 @@ import scipy.io
 from scipy import signal
 
 #import own function
-from Filter import lowpass
-from Setting import PlotSetting, RecordSetting, WaveSetting
+from NeuroProcessing.Filter import lowpass
+from NeuroProcessing.Setting import PlotSetting, RecordSetting, WaveSetting
 
 def diff_by_block(base,compare,block_size):
     # 長い配列を部分ごとに区切って足す
