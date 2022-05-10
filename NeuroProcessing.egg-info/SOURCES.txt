@@ -7,6 +7,7 @@ NeuroProcessing/Plot.py
 NeuroProcessing/Setting.py
 NeuroProcessing/SimplifiedMethod.py
 NeuroProcessing/TDTProcessing.py
+NeuroProcessing/WaveStats.py
 NeuroProcessing/__init__.py
 NeuroProcessing.egg-info/PKG-INFO
 NeuroProcessing.egg-info/SOURCES.txt

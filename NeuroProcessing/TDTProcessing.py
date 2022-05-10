@@ -4,10 +4,10 @@ import warnings
 def read_tdtcsv(filename):
     df=pd.read_csv(filename)
     row=df.shape[0]
-    column=df.shape[0]
+    column=df.shape[1]
     data_head=df.columns.get_loc("1")
     waveforms = {}
-    dB_name=df.columns[df.columns.str.contains("\\(db\\)")].values[0]
+    dB_name=df.columns[df.columns.str.contains("\\(dB\\)")].values[0]
 
     if(row==len(set([f"{i}{j}" for i,j in zip(df["Sub. ID"], df[dB_name])]))):
         datanames=[f"{i}dB" for i in df[dB_name]]
@@ -17,3 +17,4 @@ def read_tdtcsv(filename):
     for i,j in enumerate(datanames):
         waveforms[j] = list(df.iloc[i,[*list(range(data_head,column-1))]])
     return waveforms
+

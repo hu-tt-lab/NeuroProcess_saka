@@ -134,26 +134,27 @@ def plot_abrs(data,axes,ylim,samplerate):
     return
 
 
-def plot_lfp(lfp_data,channelmap,ylim,param):
+def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name):
     fig, axes = plt.subplots(nrows=len(channelmap), sharex=True, figsize=[9,6])
-    title=f"LFP {param}"
+    title=f"LFP {title_and_filename}"
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
     fig.supxlabel("Time from Stimulation (ms)")
     fig.supylabel("Depth from Bran Surface (µm)")
-    xlim=[-50,350]
     plot_event(fig, axes, xlim)
     plot_channels(lfp_data,axes,channelmap,ylim)
-    if not(os.path.exists("./wave_plot")):
-        os.mkdir("./wave_plot")
-    fig.savefig(f'./wave_plot/lfp_{param}.png')
+    if not(os.path.exists("./lfp_plot")):
+        os.mkdir("./lfp_plot")
+    if not(os.path.exists(f"./lfp_plot/{save_fig_dir_name}")):
+        os.mkdir("./lfp_plot")
+    fig.savefig(f'./lfp_plot/{save_fig_dir_name}/lfp_{title_and_filename}.png')
     fig.clear()
     plt.close(fig)
     del axes
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
@@ -176,9 +177,11 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param):
     ax.set_xlabel("time from stimulation[ms]")
     if not(os.path.exists("./csd_fig")):
         os.mkdir("./csd_fig")
+    if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
+        os.mkdir("./csd_fig/{save_fig_dir_name}")
     title=f"csd_{param}"
     plt.title(title)
-    plt.savefig(f'./csd_fig/{title}.png')
+    plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')
     plt.clf()
     plt.close()
     gc.collect()

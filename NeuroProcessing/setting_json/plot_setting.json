@@ -7,5 +7,7 @@
   "ylabel" : "depth[μm]",
   "title": "Waveplot",
   "lfp_ylim" : [-200,200],
-  "abr_ylim" : [-1,1]
+  "abr_ylim" : [-1,1],
+  "samplerate": 40000,
+  "csd_vrange" : 30
 }

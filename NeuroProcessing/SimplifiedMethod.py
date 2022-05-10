@@ -28,9 +28,10 @@ def get_abr_data_from_mat_file_dir(dir_path: Path,setting_instance: PlotSetting)
     csd_vrange=50
     is_diff=False
     fourier_xlim=[200,4000]
+    wave_setting=WaveSetting()
     for plx_filepath in plx_filelist:
         print(plx_filepath.name)
-        lfp_data=process_lfp_from_FP_ch(plx_filepath,50,350,setting_instance)
+        lfp_data=process_lfp_from_FP_ch(plx_filepath,-50,350,wave_setting)
         if "click" in plx_filepath.name:
             dB=re.search("click_(\d+)",plx_filepath.name).group(1)
             # info=re.search("click_(\d+)_(.*).mat",plx_filepath.name).group(2)

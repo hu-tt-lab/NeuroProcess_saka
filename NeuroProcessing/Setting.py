@@ -39,8 +39,10 @@ class NumpyEncoder(json.JSONEncoder):
 
 
 class PlotSetting():
-    def __init__(self):
-        with open("json/setting.json") as setting_file:
+    def __init__(self,json_filename:str = ""):
+        if len(json_filename)==0:
+                json_filename="setting_json/plot_setting.json"
+        with open(json_filename) as setting_file:
             params=json.load(setting_file)
             self.xlim: list[float] = params["xlim"]
             self.ylim: list[float] = params["ylim"]
@@ -52,12 +54,15 @@ class PlotSetting():
             self.title : str = params["title"]
             self.lfp_ylim: list[float] = params["lfp_ylim"]
             self.abr_ylim: list[float] = params["abr_ylim"]
+            self.csd_vrange: int = params["csd_vrange"]
 
+class WaveSetting:
 # class for waveform
 # testing class
-class WaveSetting:
-    def __init__(self) -> None:
-        with open("setting_json/wave_setting.json") as setting_file:
+    def __init__(self,json_filename:str = ""):
+        if len(json_filename)==0:
+            json_filename="setting_json/wave_setting.json"
+        with open(json_filename) as setting_file:
             params=json.load(setting_file)
             self.samplerate: int = params["samplerate"]
             self.time_prefix : str = params["time_prefix"]
@@ -65,8 +70,10 @@ class WaveSetting:
             self.timespan : list[int] = params["timespan"]
 
 class RecordSetting:
-    def __init__(self) -> None:
-        with open("setting/record_setting.json") as setting_file:
+    def __init__(self,json_filename:str = ""):
+        if len(json_filename)==0:
+            json_filename="setting_json/record_setting.json"
+        with open(json_filename) as setting_file:
             params=json.load(setting_file)
             self.spkc_samplerate: int = params["spkc_samplerate"]
             self.event_ch : str = params["event_ch"]

@@ -1,0 +1,5 @@
+{
+    "event_ch" : "EVT01",
+    "spkc_samplerate" : 40000,
+    "lfp_ts_ch" : "FP01_ts"
+}
