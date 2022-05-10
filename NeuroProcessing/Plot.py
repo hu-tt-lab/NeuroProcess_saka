@@ -41,7 +41,7 @@ def format_axis(ax):
         labelbottom=False) # labels along the bottom edge are off
     return
 
-def plot_channels(line,axes,channelmap,xlim,ylim,voltage_prefix: str):
+def plot_channels(line,axes,channelmap,xlim,ylim,voltage_prefix: str="μV"):
     for ch_count,channel in enumerate(channelmap,1):
         wave=np.array(line[channel-1])
         i = ch_count-1
@@ -142,11 +142,11 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     fig.supxlabel("Time from Stimulation (ms)")
     fig.supylabel("Depth from Bran Surface (µm)")
     plot_event(fig, axes, xlim)
-    plot_channels(lfp_data,axes,channelmap,ylim)
+    plot_channels(lfp_data,axes,channelmap,xlim,ylim)
     if not(os.path.exists("./lfp_plot")):
         os.mkdir("./lfp_plot")
     if not(os.path.exists(f"./lfp_plot/{save_fig_dir_name}")):
-        os.mkdir("./lfp_plot")
+        os.mkdir(f"./lfp_plot/{save_fig_dir_name}")
     fig.savefig(f'./lfp_plot/{save_fig_dir_name}/lfp_{title_and_filename}.png')
     fig.clear()
     plt.close(fig)
@@ -178,7 +178,7 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name):
     if not(os.path.exists("./csd_fig")):
         os.mkdir("./csd_fig")
     if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
-        os.mkdir("./csd_fig/{save_fig_dir_name}")
+        os.mkdir(f"./csd_fig/{save_fig_dir_name}")
     title=f"csd_{param}"
     plt.title(title)
     plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')

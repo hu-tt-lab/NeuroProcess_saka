@@ -1,3 +1,4 @@
+import wave
 import numpy as np
 
 
@@ -34,3 +35,14 @@ def acquire_zscore_at_one_point(waveform,samplerate,time_range_ms,base_span_ms,t
     zscore=(voltage-base_mean)/base_std
     
     return zscore
+
+def acquire_wave_stats_data_from_list_or_dict(data_list_or_dict,total_span_ms,noise_span_ms,signal_span_ms,samplerate):
+    result_dict={}
+    if type(data_list_or_dict)==list:
+        index=range(1,len(data_list_or_dict)+1)
+        data_list_or_dict=dict(zip(index,data_list_or_dict))
+    for key,waveform in data_list_or_dict.items():
+        peak_voltage_uv,peak_latency_ms=acquire_peak_uv_and_latency_ms(waveform,total_span_ms,samplerate,signal_span_ms)
+        zscore=acquire_zscore_at_one_point(waveform,samplerate,total_span_ms,noise_span_ms,peak_latency_ms)
+        result_dict[key]={"peak_voltage[μV]":peak_voltage_uv, "peak_latency[ms]": peak_latency_ms,"zscore":zscore}
+    return result_dict

@@ -30,7 +30,7 @@ def highpass(x, samplerate, fp, fs, gpass, gstop):
     y = signal.filtfilt(b, a, x)                  #信号に対してフィルタをかける
     return y 
 
-def notchpass(x,threshold,samplerate) -> np.ndarray:
+def notchpass(x,threshold,samplerate):
     """
     フーリエ変換を使用したノッチフィルタ
 
@@ -50,7 +50,7 @@ def source(wave, d: float=0.05):
     # 0.3は脳に置ける電流の伝導率
     return -0.3 * np.gradient(np.gradient(wave, axis=1), axis=1) / (d**2)
 
-def gradient_double(wave,axis):
+def gradient_double(wave,axis: int=0):
     return np.gradient(np.gradient(wave, axis=axis), axis=axis)
 
 def blur(reshape_data,size,axis):

@@ -36,7 +36,18 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
     return timestamp
 
 
-def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:WaveSetting):
+def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:RecordSetting):
+    """_summary_
+
+    Args:
+        plx_filepath (_type_): _description_
+        offset (_type_): _description_
+        onset (_type_): _description_
+        record_setting (RecordSetting): _description_
+
+    Returns:
+        list: lfp_voltage_datas_array
+    """
     #取得したpathを元にLFP波形を取得・加算平均を行う
     mat_data=scipy.io.loadmat(plx_filepath)
     #timestampの取得
