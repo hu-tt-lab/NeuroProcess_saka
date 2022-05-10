@@ -1,3 +1,4 @@
+import re
 import numpy as np
 from matplotlib import pyplot as plt
 import os
@@ -7,6 +8,16 @@ import gc
 from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
 from NeuroProcessing.Filter import gradient_double,spline
+
+
+def plastic_key(key):
+    vol=re.match("[0-9]+V",key)
+    if vol!=None:
+        vol=vol.group(0)
+    params=re.findall("[a-z]+_[0-9]+",key)
+    params="\n".join(params)
+    plasticed_key=f"{vol}\n{params}"
+    return plasticed_key
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)
@@ -97,6 +108,12 @@ def plot_abr(abr_dic,title,dir_name,ylim):
     if not (os.path.exists("./abr_images/")):
         os.mkdir("./abr_images")
     fig.savefig(f"./abr_images/{dir_name}_{title}.png")
+    fig.clear()
+    plt.close(fig)
+    del axes
+    del fig
+    gc.collect()
+    
 
 def plot_abrs(data,axes,ylim,samplerate):
     i=0
@@ -110,6 +127,8 @@ def plot_abrs(data,axes,ylim,samplerate):
         axes[i].set_facecolor("#ffffff00")
         axes[i].set_xlim(xlim[0],xlim[1])
         axes[i].set_ylim(ylim[0],ylim[1])
+        if len(key)>=10:
+            key=plastic_key(key)
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
         # Plot base line
         axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
