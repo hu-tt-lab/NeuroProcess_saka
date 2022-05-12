@@ -51,6 +51,7 @@ def acquire_wave_stats_data_from_list_or_dict(data_list_or_dict,total_span_ms,no
         result_dict[key]={"peak_voltage[uV]":peak_voltage_uv, "peak_latency[ms]": peak_latency_ms,"zscore":zscore}
     return result_dict
 
+
 if __name__ == "__main__":
     datas=np.linspace(-50,350,400*40)
     v,i=acquire_peak_uv_and_latency_ms(datas,[-50,350],40000,[0,100])
