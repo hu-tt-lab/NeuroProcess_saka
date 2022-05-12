@@ -11,18 +11,16 @@ from NeuroProcessing.Filter import gradient_double,spline
 
 
 def plastic_key(key):
-    vol=re.match("[0-9]+V",key)
+    vol=re.search("[0-9]+V",key)
     if vol!=None:
-        vol_data=vol.group(0)
         start=vol.end()+1
+        vol=vol.group(0)
     else:
         start=0
+        vol=""
     params=re.findall("[a-z]+_[0-9]+",key[start:])
     params="\n".join(params)
-    if vol_data in str:
-        plasticed_key=f"{vol_data}\n{params}"
-    else:
-        plasticed_key=params
+    plasticed_key=f"{vol}\n{params}"
     return plasticed_key
 
 def plot_event(fig, axes, xlim):
