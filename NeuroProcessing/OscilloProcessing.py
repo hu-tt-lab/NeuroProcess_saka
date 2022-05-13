@@ -166,7 +166,6 @@ def bin_to_csv(file,csv_filename,dir_name = None):
         block_num = block_num +1
         div_flag = True
     
-    time_volt_data=[[] for _ in range(block_num)]
     for k in range(0,block_num):
         CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*(k+1))
         if k == (block_num -1) and div_flag:
@@ -221,6 +220,85 @@ def rename_oscillo_bin_files(bin_files: list[Path],day_join_hyphen="1998-10-14")
             num="0".zfill(zfill_num)
             num=f"({num})"
             os.rename(bin_file,f"{bin_file.parent}\{bin_file.name.replace('.bin',' '+num+'.bin')}")
+    
+def bin_to_samplerate_and_arrays(file,input_chs:int=1):
+    try:
+        f=open(file,'rb+')
+        ch_state = deal_to_int(f, 4)
+        ch_vdiv = deal_to_data_unit(f, 4)
+        ch_ofst = deal_to_data_unit(f, 4)
+        digit_state = deal_to_int(f, 17)
+        hori_list = deal_to_data_unit(f, 2)
+        wave_len = deal_to_int(f, 1)
+        print(wave_len)
+        sara = deal_to_data_unit(f, 1)
+        di_wave_len = deal_to_int(f, 1)
+        print(di_wave_len)
+        di_sara = deal_to_data_unit(f, 1)
+        reserve = f.read(RESERVE_BYTE_LEN)
+        data = f.read()
+    except IOError:
+        print("Error: Can't find the bin file or read failed!")
+    else:
+        f.close()
+        print('Read data from bin file finished!')
+    
+    samplerate=sara
+    
+    if len(data) >= 14e6 or wave_len >= 1E6:
+        BLOCK_LEN = 1000000
+        print('start to block')
+    else:
+        BLOCK_LEN = wave_len
+    time_values=[]
+    if input_chs > 1:
+        volt_values = [[] for _ in input_chs]
+    elif input_chs == 1:
+        volt_values = []
+    else:
+        print("input_chs in must be larger than 1 ")
+        return
+    
+    block_num = int(wave_len//BLOCK_LEN)
+    last_block_len = wave_len%BLOCK_LEN
+    div_flag = False
+    if  last_block_len!= 0:
+        block_num = block_num +1
+        div_flag = True
+    
+    
+    for k in range(0,block_num):
+        CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*(k+1))
+        if k == (block_num -1) and div_flag:
+            CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*k+last_block_len)
+        print('BLOCK{0} {1} converting...'.format(k,CH1_DATA_BLOCK))
+        csv_ch_time_volt = []
+        #-------------------------analog data convert------------------------------
+        print('analog converting...')
+        for i in CH1_DATA_BLOCK:
+            ch_state_num = 0
+            volt = []
+            time_data = float(-hori_list[0]*HORI_DIV_NUM/2+ i*(1/sara))
+            for j in range(0,len(ch_state)):
+                if ch_state[j]:
+                    volt_data = int(data[i+ (ch_state_num * wave_len)]) 
+                    a = (volt_data -128)*ch_vdiv[j]/VERT_DIV_CODE - ch_ofst[j]
+                    volt.append(Decimal(str(a)).quantize(Decimal(FIVE_PREC)))
+                    ch_state_num += 1
+                else:
+                    pass
+            if ch_state_num > 0:
+                volt.insert(0,Decimal(str(time_data)).quantize(Decimal(ELEV_PREC)))    
+            csv_ch_time_volt.append(volt)   
+        time_values.extend([data[0] for data in csv_ch_time_volt])
+        if input_chs >1:
+            for i in range(input_chs):
+                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt])
+        else:
+            volt_values.extend(data[1] for data in csv_ch_time_volt)
+        del csv_ch_time_volt
+        gc.collect()
+    return samplerate,time_values,volt_values            
 
 def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_table):
     """_summary_
@@ -267,3 +345,13 @@ def load_wave_from_oscillo_csv(file_path: str):
     voltage=data["CH1"].values
     voltage=np.array(list(map(float,voltage)))
     return time,voltage
+
+
+if __name__== "__main__":
+    bin_file="F:/experiment/20220506_fg_voltage/bin/01_us_burst_freq_500kHz_prf_1500Hz_pulse_150_window_0/usr_wf_data (00).bin"
+    samplerate,time,volt=bin_to_samplerate_and_arrays(bin_file)
+    print(samplerate)
+    print(time[:10])
+
+    
+    
