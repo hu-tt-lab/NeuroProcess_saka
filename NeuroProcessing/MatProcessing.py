@@ -2,7 +2,7 @@ import wave
 import numpy as np
 import scipy.io
 from scipy import signal
-
+from typing import Union
 #import own function
 from NeuroProcessing.Filter import lowpass
 from NeuroProcessing.Setting import PlotSetting, RecordSetting, WaveSetting
@@ -125,6 +125,16 @@ def process_abr(plx_filepath,xlim,is_diff):
     total_wave/=index
     total_wave*=1000
     return total_wave
+
+def substract_mean_of_base_span(waveform : Union[np.ndarray,list], base_span:list[int] = [0,50]):
+    base_span_data=waveform[base_span[0],base_span[1]]
+    if waveform is list:
+        waveform=np.array(base_span_data)
+        base_span_data=np.array(base_span_data)
+    base_mean=np.mean(base_span_data)
+    waveform-=base_mean    
+    return waveform
+
 
 def reshape_lfps(lfp_data,channelmap):
     all_waveform=[]

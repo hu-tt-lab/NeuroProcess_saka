@@ -14,7 +14,7 @@ def plastic_key(key):
     vol=re.match("[0-9]+V",key)
     if vol!=None:
         vol=vol.group(0)
-    params=re.findall("[a-z]+_[0-9]+",key)
+    params=re.findall("[a-z]+_([0-9]+|[0-9]+.[0-9]+)",key)
     params="\n".join(params)
     plasticed_key=f"{vol}\n{params}"
     return plasticed_key
