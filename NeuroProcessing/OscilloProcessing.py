@@ -250,7 +250,7 @@ def bin_to_samplerate_and_arrays(file,input_chs:int=1):
         print('start to block')
     else:
         BLOCK_LEN = wave_len
-    time_values=[]
+    time_values_in_ms=[]
     if input_chs > 1:
         volt_values = [[] for _ in input_chs]
     elif input_chs == 1:
@@ -290,15 +290,17 @@ def bin_to_samplerate_and_arrays(file,input_chs:int=1):
             if ch_state_num > 0:
                 volt.insert(0,Decimal(str(time_data)).quantize(Decimal(ELEV_PREC)))    
             csv_ch_time_volt.append(volt)   
-        time_values.extend([data[0] for data in csv_ch_time_volt])
+        time_values_in_ms.extend([data[0] for data in csv_ch_time_volt[:7000000-2]])
         if input_chs >1:
             for i in range(input_chs):
-                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt])
+                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt[:7000000-2]])
         else:
-            volt_values.extend(data[1] for data in csv_ch_time_volt)
+            volt_values.extend([data[1] for data in csv_ch_time_volt[:7000000-2]])
         del csv_ch_time_volt
         gc.collect()
-    return samplerate,time_values,volt_values            
+        #時間波形データをmsオーダーに改変
+        time_values_in_ms=np.array(time_values_in_ms)*1000
+    return samplerate,time_values_in_ms,volt_values            
 
 def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_table):
     """_summary_
