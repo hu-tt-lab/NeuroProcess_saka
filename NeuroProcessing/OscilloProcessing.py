@@ -320,18 +320,11 @@ def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_tab
     counts=defaultdict(int)
     for bin_file in bin_files:
         line=order_table.iloc[index]
-        if line["state"]=="click":
-            title=f'{line["db"]}'
-        elif line["state"]=="us_burst":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
-        elif line["state"]=="us_cont":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
-            
+        title=collection_info_from_line(line)    
         if title in counts:
             counts[title]+=1
         else:
             counts[title]=0
-            
         title=f"{title}_{counts[title]}"
         print(title)        
         time_volt_data=bin_to_csv(bin_file,f"{title}.csv",str(data_dir.name))
@@ -348,18 +341,23 @@ def load_wave_from_oscillo_csv(file_path: str):
     voltage=np.array(list(map(float,voltage)))
     return time,voltage
 
+def collection_info_from_line(line):
+    if line["state"]=="click":
+            title=f'{line["db"]}'
+    elif line["state"]=="us_burst":
+        pulse_duration=round(line["pulse_duration"],3)
+        title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_PD_{pulse_duration}us_PRF_{line["PRF"]}Hz_window_{line["window"]}%'
+    elif line["state"]=="us_cont":
+        title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{round(line["window"]*1000,3)}ms'
+    return title
+
 def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame):
     index=0
     bin_files=list(data_dir.glob("*"))
     counts=defaultdict(int)
     for bin_file in bin_files:
         line=order_table.iloc[index]
-        if line["state"]=="click":
-            title=f'{line["db"]}'
-        elif line["state"]=="us_burst":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
-        elif line["state"]=="us_cont":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
+        title=collection_info_from_line(line)
         if title in counts:
             counts[title]+=1
         else:
