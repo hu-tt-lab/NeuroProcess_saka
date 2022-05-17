@@ -348,6 +348,26 @@ def load_wave_from_oscillo_csv(file_path: str):
     voltage=np.array(list(map(float,voltage)))
     return time,voltage
 
+def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame):
+    index=0
+    bin_files=list(data_dir.glob("*"))
+    counts=defaultdict(int)
+    for bin_file in bin_files:
+        line=order_table.iloc[index]
+        if line["state"]=="click":
+            title=f'{line["db"]}'
+        elif line["state"]=="us_burst":
+            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
+        elif line["state"]=="us_cont":
+            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
+        if title in counts:
+            counts[title]+=1
+        else:
+            counts[title]=0    
+        title=f"{title}_{counts[title]}"
+        os.rename(bin_file,f"{bin_file.parent}\{title}{bin_file.suffix}")
+        
+
 
 if __name__== "__main__":
     bin_file="F:/experiment/20220506_fg_voltage/bin/01_us_burst_freq_500kHz_prf_1500Hz_pulse_150_window_0/usr_wf_data (00).bin"
