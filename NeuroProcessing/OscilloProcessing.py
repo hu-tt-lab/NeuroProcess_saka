@@ -357,15 +357,24 @@ def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame):
         if line["state"]=="click":
             title=f'{line["db"]}'
         elif line["state"]=="us_burst":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
+            amp=int(line["amp"]*1000)
+            duration=round(line["duration"]*1000,3)
+            pd=int(line["pulse_duration"]*1000000)
+            window=int(line["window"])
+            title=f'{amp}mV_{duration}ms_PD_{pd}us_PRF_{int(line["PRF"])}Hz_window_{window}%'
         elif line["state"]=="us_cont":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
+            duration=round(line["duration"]*1000,3)
+            amp=int(line["amp"]*1000)
+            window=round(line["window"],3)
+            title=f'{amp}mV_{duration}ms_window_{window}ms'
         if title in counts:
             counts[title]+=1
         else:
             counts[title]=0    
         title=f"{title}_{counts[title]}"
         os.rename(bin_file,f"{bin_file.parent}\{title}{bin_file.suffix}")
+        index+=1
+    return
         
 
 
