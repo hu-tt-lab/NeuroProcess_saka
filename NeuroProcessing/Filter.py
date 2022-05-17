@@ -1,3 +1,4 @@
+from typing import Union
 from scipy import ndimage,interpolate,signal
 import numpy as np
 from scipy import fftpack
@@ -61,3 +62,11 @@ def spline(reshape_data,size,axis: int=-1):
     function = interpolate.interp1d(x, reshape_data, axis=axis)
     u = np.linspace(0, x[-1], (x.size - 1) * (size + 1) + 1)
     return function(u)
+
+def acquire_fft_data(voltage_data: Union[list,np.ndarray],samplerate:int):
+    point=len(voltage_data)
+    d=1/samplerate
+    F=np.fft.fft(voltage_data,n=point)
+    freq=np.fft.fftfreq(n=point,d=d)
+    Amp=np.abs(F/(point/2))
+    return freq,Amp
