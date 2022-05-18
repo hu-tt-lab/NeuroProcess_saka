@@ -145,8 +145,7 @@ def append_statistic_data(voltage_wave,samplerate,is_averaged,df,name,single_dir
         audible_low_range_sum,audible_middle_range_sum,audible_high_range_sum,
         side_band_peak_value,side_band_freq
         ]
-    record = pd.Series(data, index=df.columns,name=name)
-    df.append(record)
+    df.loc[name]=data
     return
 
 def plot_and_make_df(data_dirs):
@@ -170,7 +169,7 @@ def plot_and_make_df(data_dirs):
             print(f"record is appended: {cnt}")
             if ind == 0:
                 wave_data=np.array([])
-            elif ind == len(bin_files)-1 or bin_files[ind].name[:-6] != bin_files[ind-1].name[:-6]:
+            elif ind == len(bin_files)-1 or bin_files[ind].name[:-6] != bin_files[ind+1].name[:-6]:
                 averaged_wave=np.mean(wave_data,axis=0)
                 title=bin_file.name[:-5]+"ave"
                 plot_oscillo_data(samplerate,time_data,averaged_wave,title,single_dir.name,40)
@@ -178,7 +177,7 @@ def plot_and_make_df(data_dirs):
                 cnt+=1
                 print(f"record is appended: {cnt}")
                 wave_data=np.array([])
-            elif bin_files[ind].name[:-6] == bin_files[ind-1].name[:-6]:
+            elif bin_files[ind].name[:-6] == bin_files[ind+1].name[:-6]:
                 if len(wave_data)==0:
                     wave_data=voltage_wave
                 else:
