@@ -63,7 +63,7 @@ def spline(reshape_data,size,axis: int=-1):
     u = np.linspace(0, x[-1], (x.size - 1) * (size + 1) + 1)
     return function(u)
 
-def acquire_fft_data(voltage_data: Union[list,np.ndarray],samplerate:int):
+def acquire_amp_spectrum(voltage_data: Union[list,np.ndarray],samplerate:int):
     point=len(voltage_data)
     d=1/samplerate
     F=np.fft.fft(voltage_data,n=point)

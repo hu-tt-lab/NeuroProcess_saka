@@ -1,4 +1,4 @@
-import wave
+import gc
 import numpy as np
 
 
@@ -51,6 +51,22 @@ def acquire_wave_stats_data_from_list_or_dict(data_list_or_dict,total_span_ms,no
         result_dict[key]={"peak_voltage[uV]":peak_voltage_uv, "peak_latency[ms]": peak_latency_ms,"zscore":zscore}
     return result_dict
 
+def acquire_max_spectrum_value_and_freq(freq:np.ndarray ,amp:np.ndarray, target_freq_range:list[float]):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    max_amp=np.max(amp[left_point:right_point])
+    max_amp_ind=np.argmax(amp[left_point:right_point])
+    target_freq_range=freq[left_point:right_point]
+    target_freq=target_freq_range[max_amp_ind]
+    del target_freq_range
+    gc.collect()
+    return max_amp,target_freq
+
+def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    sum_spectrum=np.sum(amp[left_point:right_point])
+    return sum_spectrum
 
 if __name__ == "__main__":
     datas=np.linspace(-50,350,400*40)

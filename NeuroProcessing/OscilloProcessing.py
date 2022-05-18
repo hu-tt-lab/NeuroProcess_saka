@@ -64,7 +64,7 @@ def deal_to_int(f, para_num):
 def get_bit_from_byte(byData,bit):
     n0 = 1 if((byData & (1<<bit))== (1<<bit)) else 0
     return n0
-    
+
 def bin_to_csv(file,csv_filename,dir_name = None):
     """convert .bin file which is created by oscilloscope to .csv file 
 
@@ -290,12 +290,12 @@ def bin_to_samplerate_and_arrays(file,input_chs:int=1):
             if ch_state_num > 0:
                 volt.insert(0,Decimal(str(time_data)).quantize(Decimal(ELEV_PREC)))    
             csv_ch_time_volt.append(volt)   
-        time_values_in_ms.extend([data[0] for data in csv_ch_time_volt[:7000000-2]])
+        time_values_in_ms.extend([data[0] for data in csv_ch_time_volt])
         if input_chs >1:
             for i in range(input_chs):
-                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt[:7000000-2]])
+                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt])
         else:
-            volt_values.extend([data[1] for data in csv_ch_time_volt[:7000000-2]])
+            volt_values.extend([data[1] for data in csv_ch_time_volt])
         del csv_ch_time_volt
         gc.collect()
         #時間波形データをmsオーダーに改変
@@ -348,7 +348,7 @@ def load_wave_from_oscillo_csv(file_path: str):
     voltage=np.array(list(map(float,voltage)))
     return time,voltage
 
-def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame):
+def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame,cont_window_prefix:str="%"):
     index=0
     bin_files=list(data_dir.glob("*"))
     counts=defaultdict(int)
@@ -366,7 +366,7 @@ def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame):
             duration=round(line["duration"]*1000,3)
             amp=int(line["amp"]*1000)
             window=round(line["window"],3)
-            title=f'{amp}mV_{duration}ms_window_{window}ms'
+            title=f'{amp}mV_{duration}ms_window_{window}{cont_window_prefix}'
         if title in counts:
             counts[title]+=1
         else:

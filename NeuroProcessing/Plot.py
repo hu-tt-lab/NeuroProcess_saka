@@ -7,7 +7,7 @@ import gc
 # import own function
 from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
-from NeuroProcessing.Filter import gradient_double,spline
+from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
 
 def plastic_key(key):
@@ -261,12 +261,7 @@ def plot_fft(axes,index,volt_datas,samplerate,xlim,title):
     row=index[0]
     col=index[1]
     ax=axes[row][col]
-    point=len(volt_datas)
-    d=1/samplerate
-    point=len(volt_datas)
-    F=np.fft.fft(volt_datas,n=point)
-    freq=np.fft.fftfreq(n=point,d=d)
-    Amp=np.abs(F/(point/2))
+    freq,Amp= acquire_amp_spectrum(volt_datas,samplerate)
     left_point=np.argmin(freq[freq>=xlim[0]])
     right_point=np.argmax(freq[freq<=xlim[1]])
     xlim_point=[left_point,right_point]
