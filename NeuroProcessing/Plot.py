@@ -1,4 +1,5 @@
 import re
+from turtle import color
 import numpy as np
 from matplotlib import pyplot as plt
 import os
@@ -248,7 +249,7 @@ def plot_wave(axes,index,time_datas,volt_datas,xlim,title):
     col=index[1]
     ax=axes[row][col]
     time_datas=np.array(time_datas)
-    ax.plot(time_datas,volt_datas)
+    ax.plot(time_datas,volt_datas,color="k")
     ax.set_xlim(xlim)
     if max(volt_datas)<=0.5:
         ax.set_ylim[-0.5,0.5]
@@ -262,10 +263,10 @@ def plot_fft(axes,index,volt_datas,samplerate,xlim,title):
     col=index[1]
     ax=axes[row][col]
     freq,Amp= acquire_amp_spectrum(volt_datas,samplerate)
-    left_point=np.argmin(freq[freq>=xlim[0]])
+    left_point=np.where(freq==freq[freq>=xlim[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=xlim[1]])
     xlim_point=[left_point,right_point]
-    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]])
+    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]],color="k")
     ax.set_xlabel("Freqency [Hz]")
     ax.set_ylabel("Amplitude")
     ax.set_title(title)

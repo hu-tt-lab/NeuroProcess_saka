@@ -1,6 +1,6 @@
 import gc
 import numpy as np
-
+from scipy.signal import find_peaks
 
 def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span_ms):
     """acquire peak and latency of single waveform
@@ -67,6 +67,34 @@ def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
     sum_spectrum=np.sum(amp[left_point:right_point])
     return sum_spectrum
+
+def acquire_average_spectrum(freq:np.ndarray,amp:np.ndarray,target_freq_range:list[float]):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    mean_spectrum=np.mean(amp[left_point:right_point])
+    return mean_spectrum
+
+def find_peaks_from_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float], width:int):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    peaks_ind,_=find_peaks(amp[left_point:right_point],width=width)
+    return peaks_ind
+
+def acquire_indexes_from_fftfreq(freq:np.ndarray,target_freq_range:list[float]):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    return left_point,right_point
+
+def acquire_side_band_value_and_freq(freq,Amp,target_freq_range):
+    peaks_ind=find_peaks_from_spectrum(freq,Amp,target_freq_range,3)
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    peak_freqs=freq[left_point:right_point][peaks_ind]
+    peak_Amps=Amp[left_point:right_point][peaks_ind]
+    Amps_arg_sorted=np.argsort(peak_Amps)
+    side_band_peaks=peak_Amps[Amps_arg_sorted[-2]]
+    side_band_cent_freq=peak_freqs[Amps_arg_sorted[-2]]
+    return side_band_peaks,side_band_cent_freq
 
 if __name__ == "__main__":
     datas=np.linspace(-50,350,400*40)

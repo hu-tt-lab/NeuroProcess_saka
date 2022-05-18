@@ -250,11 +250,11 @@ def bin_to_samplerate_and_arrays(file,input_chs:int=1):
         print('start to block')
     else:
         BLOCK_LEN = wave_len
-    time_values_in_ms=[]
+    time_values_in_ms=np.array([])
     if input_chs > 1:
-        volt_values = [[] for _ in input_chs]
+        volt_values = [np.array([]) for _ in input_chs]
     elif input_chs == 1:
-        volt_values = []
+        volt_values = np.array([])
     else:
         print("input_chs in must be larger than 1 ")
         return
@@ -289,17 +289,20 @@ def bin_to_samplerate_and_arrays(file,input_chs:int=1):
                     pass
             if ch_state_num > 0:
                 volt.insert(0,Decimal(str(time_data)).quantize(Decimal(ELEV_PREC)))    
-            csv_ch_time_volt.append(volt)   
-        time_values_in_ms.extend([data[0] for data in csv_ch_time_volt])
+            csv_ch_time_volt.append(volt)
+        time_data=np.array([data[0] for data in csv_ch_time_volt])
+        time_values_in_ms=np.concatenate([time_values_in_ms,time_data])
         if input_chs >1:
             for i in range(input_chs):
-                volt_values[i+1].extend([data[i+1] for data in csv_ch_time_volt])
+                volt_data=np.array([data[i+1] for data in csv_ch_time_volt])
+                volt_values[i]=np.concatenate([volt_values[i],volt_data])
         else:
-            volt_values.extend([data[1] for data in csv_ch_time_volt])
+            volt_data=np.array([data[1] for data in csv_ch_time_volt])
+            volt_values=np.concatenate([volt_values,volt_data])
         del csv_ch_time_volt
         gc.collect()
-        #時間波形データをmsオーダーに改変
-        time_values_in_ms=np.array(time_values_in_ms)*1000
+    #時間波形データをmsオーダーに改変
+    time_values_in_ms=np.array(time_values_in_ms)*1000
     return samplerate,time_values_in_ms,volt_values            
 
 def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_table):
@@ -375,8 +378,6 @@ def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame,co
         os.rename(bin_file,f"{bin_file.parent}\{title}{bin_file.suffix}")
         index+=1
     return
-        
-
 
 if __name__== "__main__":
     bin_file="F:/experiment/20220506_fg_voltage/bin/01_us_burst_freq_500kHz_prf_1500Hz_pulse_150_window_0/usr_wf_data (00).bin"
