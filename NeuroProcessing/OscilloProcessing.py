@@ -64,7 +64,7 @@ def deal_to_int(f, para_num):
 def get_bit_from_byte(byData,bit):
     n0 = 1 if((byData & (1<<bit))== (1<<bit)) else 0
     return n0
-    
+
 def bin_to_csv(file,csv_filename,dir_name = None):
     """convert .bin file which is created by oscilloscope to .csv file 
 
@@ -166,7 +166,6 @@ def bin_to_csv(file,csv_filename,dir_name = None):
         block_num = block_num +1
         div_flag = True
     
-    time_volt_data=[[] for _ in range(block_num)]
     for k in range(0,block_num):
         CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*(k+1))
         if k == (block_num -1) and div_flag:
@@ -221,6 +220,90 @@ def rename_oscillo_bin_files(bin_files: list[Path],day_join_hyphen="1998-10-14")
             num="0".zfill(zfill_num)
             num=f"({num})"
             os.rename(bin_file,f"{bin_file.parent}\{bin_file.name.replace('.bin',' '+num+'.bin')}")
+    
+def bin_to_samplerate_and_arrays(file,input_chs:int=1):
+    try:
+        f=open(file,'rb+')
+        ch_state = deal_to_int(f, 4)
+        ch_vdiv = deal_to_data_unit(f, 4)
+        ch_ofst = deal_to_data_unit(f, 4)
+        digit_state = deal_to_int(f, 17)
+        hori_list = deal_to_data_unit(f, 2)
+        wave_len = deal_to_int(f, 1)
+        print(wave_len)
+        sara = deal_to_data_unit(f, 1)
+        di_wave_len = deal_to_int(f, 1)
+        print(di_wave_len)
+        di_sara = deal_to_data_unit(f, 1)
+        reserve = f.read(RESERVE_BYTE_LEN)
+        data = f.read()
+    except IOError:
+        print("Error: Can't find the bin file or read failed!")
+    else:
+        f.close()
+        print('Read data from bin file finished!')
+    
+    samplerate=sara
+    
+    if len(data) >= 14e6 or wave_len >= 1E6:
+        BLOCK_LEN = 1000000
+        print('start to block')
+    else:
+        BLOCK_LEN = wave_len
+    time_values_in_ms=np.array([])
+    if input_chs > 1:
+        volt_values = [np.array([]) for _ in input_chs]
+    elif input_chs == 1:
+        volt_values = np.array([])
+    else:
+        print("input_chs in must be larger than 1 ")
+        return
+    
+    block_num = int(wave_len//BLOCK_LEN)
+    last_block_len = wave_len%BLOCK_LEN
+    div_flag = False
+    if  last_block_len!= 0:
+        block_num = block_num +1
+        div_flag = True
+    
+    
+    for k in range(0,block_num):
+        CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*(k+1))
+        if k == (block_num -1) and div_flag:
+            CH1_DATA_BLOCK = range(BLOCK_LEN*k,BLOCK_LEN*k+last_block_len)
+        print('BLOCK{0} {1} converting...'.format(k,CH1_DATA_BLOCK))
+        csv_ch_time_volt = []
+        #-------------------------analog data convert------------------------------
+        print('analog converting...')
+        for i in CH1_DATA_BLOCK:
+            ch_state_num = 0
+            volt = []
+            time_data = float(-hori_list[0]*HORI_DIV_NUM/2+ i*(1/sara))
+            for j in range(0,len(ch_state)):
+                if ch_state[j]:
+                    volt_data = int(data[i+ (ch_state_num * wave_len)]) 
+                    a = (volt_data -128)*ch_vdiv[j]/VERT_DIV_CODE - ch_ofst[j]
+                    volt.append(Decimal(str(a)).quantize(Decimal(FIVE_PREC)))
+                    ch_state_num += 1
+                else:
+                    pass
+            if ch_state_num > 0:
+                volt.insert(0,Decimal(str(time_data)).quantize(Decimal(ELEV_PREC)))    
+            csv_ch_time_volt.append(volt)
+        time_data=np.array([data[0] for data in csv_ch_time_volt])
+        time_values_in_ms=np.concatenate([time_values_in_ms,time_data])
+        if input_chs >1:
+            for i in range(input_chs):
+                volt_data=np.array([data[i+1] for data in csv_ch_time_volt])
+                volt_values[i]=np.concatenate([volt_values[i],volt_data])
+        else:
+            volt_data=np.array([data[1] for data in csv_ch_time_volt])
+            volt_values=np.concatenate([volt_values,volt_data])
+        del csv_ch_time_volt
+        gc.collect()
+    #時間波形データをmsオーダーに改変
+    time_values_in_ms=np.array(time_values_in_ms)*1000
+    return samplerate,time_values_in_ms,volt_values            
 
 def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_table):
     """_summary_
@@ -240,18 +323,11 @@ def convert_oscillo_bin_files_to_csv_files_based_order(data_dir: Path, order_tab
     counts=defaultdict(int)
     for bin_file in bin_files:
         line=order_table.iloc[index]
-        if line["state"]=="click":
-            title=f'{line["db"]}'
-        elif line["state"]=="us_burst":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
-        elif line["state"]=="us_cont":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
-            
+        title=collection_info_from_line(line)    
         if title in counts:
             counts[title]+=1
         else:
             counts[title]=0
-            
         title=f"{title}_{counts[title]}"
         print(title)        
         time_volt_data=bin_to_csv(bin_file,f"{title}.csv",str(data_dir.name))
@@ -267,3 +343,45 @@ def load_wave_from_oscillo_csv(file_path: str):
     voltage=data["CH1"].values
     voltage=np.array(list(map(float,voltage)))
     return time,voltage
+
+def collection_info_from_line(line,cont_window_prefix:str="%"):
+    if line["state"]=="click":
+            title=f'{line["db"]}'
+    elif line["state"]=="us_burst":
+        amp=int(line["amp"]*1000)
+        duration=round(line["duration"]*1000,3)
+        pd=int(line["pulse_duration"]*1000000)
+        window=int(line["window"])
+        title=f'{amp}mV_{duration}ms_PD_{pd}us_PRF_{int(line["PRF"])}Hz_window_{window}%'
+    elif line["state"]=="us_cont":
+        duration=round(line["duration"]*1000,3)
+        amp=int(line["amp"]*1000)
+        window=round(line["window"],3)
+        title=f'{amp}mV_{duration}ms_window_{window}{cont_window_prefix}'
+    return title
+
+
+def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame,cont_window_prefix:str="%"):
+    index=0
+    bin_files=list(data_dir.glob("*"))
+    counts=defaultdict(int)
+    for bin_file in bin_files:
+        line=order_table.iloc[index]
+        title=collection_info_from_line(line,cont_window_prefix)
+        if title in counts:
+            counts[title]+=1
+        else:
+            counts[title]=0    
+        title=f"{title}_{counts[title]}"
+        os.rename(bin_file,f"{bin_file.parent}\{title}{bin_file.suffix}")
+        index+=1
+    return
+
+if __name__== "__main__":
+    bin_file="F:/experiment/20220506_fg_voltage/bin/01_us_burst_freq_500kHz_prf_1500Hz_pulse_150_window_0/usr_wf_data (00).bin"
+    samplerate,time,volt=bin_to_samplerate_and_arrays(bin_file)
+    print(samplerate)
+    print(time[:10])
+
+    
+    

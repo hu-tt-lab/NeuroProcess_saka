@@ -1,4 +1,5 @@
 import re
+from turtle import color
 import numpy as np
 from matplotlib import pyplot as plt
 import os
@@ -7,7 +8,7 @@ import gc
 # import own function
 from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
-from NeuroProcessing.Filter import gradient_double,spline
+from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
 
 def plastic_key(key):
@@ -248,10 +249,10 @@ def plot_wave(axes,index,time_datas,volt_datas,xlim,title):
     col=index[1]
     ax=axes[row][col]
     time_datas=np.array(time_datas)
-    ax.plot(time_datas,volt_datas)
+    ax.plot(time_datas,volt_datas,color="k")
     ax.set_xlim(xlim)
     if max(volt_datas)<=0.5:
-        ax.set_ylim[-0.5,0.5]
+        ax.set_ylim([-0.5,0.5])
     ax.set_xlabel("time from stimulation[ms]")
     ax.set_ylabel("voltage [V]")
     ax.set_title(title)
@@ -261,16 +262,11 @@ def plot_fft(axes,index,volt_datas,samplerate,xlim,title):
     row=index[0]
     col=index[1]
     ax=axes[row][col]
-    point=len(volt_datas)
-    d=1/samplerate
-    point=len(volt_datas)
-    F=np.fft.fft(volt_datas,n=point)
-    freq=np.fft.fftfreq(n=point,d=d)
-    Amp=np.abs(F/(point/2))
-    left_point=np.argmin(freq[freq>=xlim[0]])
+    freq,Amp= acquire_amp_spectrum(volt_datas,samplerate)
+    left_point=np.where(freq==freq[freq>=xlim[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=xlim[1]])
     xlim_point=[left_point,right_point]
-    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]])
+    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]],color="k")
     ax.set_xlabel("Freqency [Hz]")
     ax.set_ylabel("Amplitude")
     ax.set_title(title)
