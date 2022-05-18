@@ -252,7 +252,7 @@ def plot_wave(axes,index,time_datas,volt_datas,xlim,title):
     ax.plot(time_datas,volt_datas,color="k")
     ax.set_xlim(xlim)
     if max(volt_datas)<=0.5:
-        ax.set_ylim[-0.5,0.5]
+        ax.set_ylim([-0.5,0.5])
     ax.set_xlabel("time from stimulation[ms]")
     ax.set_ylabel("voltage [V]")
     ax.set_title(title)
