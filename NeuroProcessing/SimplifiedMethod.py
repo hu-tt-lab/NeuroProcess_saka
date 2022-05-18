@@ -3,14 +3,16 @@
 とりあえず困ったらここの関数使いましょう。
 """
 from collections import defaultdict
+import datetime as dt
 
 # import original methods
 from NeuroProcessing.Filter import *
 from NeuroProcessing.MatProcessing import *
-from NeuroProcessing.OscilloProcessing import bin_to_csv
+from NeuroProcessing.OscilloProcessing import bin_to_samplerate_and_arrays
 from NeuroProcessing.Plot import plot_abr, plot_lfp, plot_csd, plot_fourier_spectal_from_dic, plot_wave, plot_fft
 from NeuroProcessing.Setting import *
 from NeuroProcessing.TDTProcessing import *
+from NeuroProcessing.WaveStats import *
 
 def get_abr_data_from_mat_file_dir(dir_path: Path,setting_instance: PlotSetting):
     # 各波形から最大の振幅を取り出し、それを統計量として各加算回数による低下を描画
@@ -69,54 +71,118 @@ def get_abr_data_from_mat_file_dir(dir_path: Path,setting_instance: PlotSetting)
         title= "ABR_from_EDIF_us_cont"
     plot_abr(abr_dic,title,dir_name.name,abr_ylim)
 
-
-def plot_and_fft(data_dir,order_table):
-    """_summary_
-
-    Args:
-        data_dir (Path): _description_
-        order_table (Pandas.Dataframe): _description_
-    """
-    #　各波形データとorder_tableの対応付け
-    index=0
-    if not(os.path.exists("./waveplot")):
-        os.mkdir("./waveplot")
-    if not(os.path.exists(f"./waveplot/{data_dir.name}")):
-        os.mkdir(f"./waveplot/{data_dir.name}")
-    dir_path=f"./waveplot/{data_dir.name}" 
-    bin_files=list(data_dir.glob("*"))
-    counts=defaultdict(int)
-    for bin_file in bin_files:
-        line=order_table.iloc[index]
-        if line["state"]=="click":
-            title=f'{line["db"]}_{line["trial"]}'
-        elif line["state"]=="us_burst":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_{line["pulse_duration"]*1000000}us_PRF{line["PRF"]}Hz_window{line["window"]}%'
-        elif line["state"]=="us_cont":
-            title=f'{line["amp"]*1000}mV_{line["duration"]*1000}ms_window{int(line["window"]*1000)}ms'
-            
-        if title in counts:
-            counts[title]+=1
-        else:
-            counts[title]=0
-            
-        title=f"{title}_{counts[title]}"
+def plot_oscillo_data(samplerate,time,vol_wave,title,dir_name,offset_in_ms):
+    print(f"loading {dir_name} data")
+    fig=plt.figure(figsize=(18,12),dpi=50,tight_layout=True)
+    #波形データをrow=0にfftデータをrow=1に保存する
+    axes = fig.subplots(2, 3)
+    time+=offset_in_ms
+    wide_xlim=[-10,110]
+    narrow_xlim=[0,2]
+    cent_freq_xlim=[0,0.01]
+    us_cent_freq_in_KHz=int(re.search("freq_(\d+)",dir_name).group(1))
+    freq_us_range=[(us_cent_freq_in_KHz*1000-50000),(us_cent_freq_in_KHz*1000+50000)]
+    if not(os.path.exists(f"./waveplot")):
+        os.mkdir(f"./waveplot")
+    if not(os.path.exists(f"./waveplot/{dir_name}")):
+        os.mkdir(f"./waveplot/{dir_name}")
+    plot_wave(axes,[0,0],time,vol_wave,wide_xlim,"whole voltage")
+    plot_wave(axes,[0,1],time,vol_wave,narrow_xlim,f"{narrow_xlim[0]}ms-{narrow_xlim[1]}ms")
+    plot_wave(axes,[0,2],time,vol_wave,cent_freq_xlim,f"{cent_freq_xlim[0]}ms-{cent_freq_xlim[1]}ms")
+    plot_fft(axes,[1,0],vol_wave,samplerate,[0,1200000],f"0-1200000Hz")
+    plot_fft(axes,[1,1],vol_wave,samplerate,[1000,7000], f"1000-7000Hz")
+    plot_fft(axes,[1,2],vol_wave,samplerate,freq_us_range, f"{freq_us_range[0]}-{freq_us_range[1]}Hz")
+    plt.savefig(f"./waveplot/{dir_name}/{title}.png")
+    plt.cla()
+    plt.clf()
+    plt.close(fig)
+    del axes,time,vol_wave,fig
+    gc.collect()
+    return 
+    
+def append_statistic_data(voltage_wave,samplerate,is_averaged,df,name,single_dir,bin_file):
+    freq,Amp=acquire_amp_spectrum(voltage_wave,samplerate)
+    freq_audible_range=[200,800000]
+    audible_range_ave_spectrum=acquire_average_spectrum(freq,Amp,freq_audible_range)
+    audible_range_max_spectrum_value,audible_range_max_spectrum_freq = acquire_max_spectrum_value_and_freq(freq,Amp,freq_audible_range)
+    us_cent_freq_in_KHz=int(re.search("freq_(\d+)",single_dir.name).group(1))
+    freq_us_range=[(us_cent_freq_in_KHz*1000-50000),(us_cent_freq_in_KHz*1000+50000)]
+    us_range_ave_spectrum=acquire_average_spectrum(freq,Amp,freq_us_range)
+    us_range_max_spectrum_value,us_range_max_spectrum_freq = acquire_max_spectrum_value_and_freq(freq,Amp,freq_us_range)
+    #可聴域周波数帯を抽出
+    freq_audible_low_range=[200,3000]
+    freq_audible_middle_range=[3000,60000]
+    freq_audible_high_range=[60000,80000]
+    audible_low_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_low_range)
+    audible_middle_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_middle_range)
+    audible_high_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_high_range)
+    dist_in_mm=int(re.search("dist_(\d+)mm",single_dir.name).group(1))
+    window_percentage=float(re.search("window_(\d+)",bin_file.name).group(1))
+    window_percentage=round(window_percentage,3)
+    if window_percentage <= 0.1:
+        window_type="rectangle"
+    else:
+        window_type="humming"
         
-        time_volt_data=bin_to_csv(bin_file,f"{title}.csv",str(data_dir.name))
-        print(time_volt_data[:10])
-        time_volt_data=time_volt_data[0]
-        time_datas=[record[0] for record in time_volt_data]
-        volt_datas=[record[1] for record in time_volt_data]
-        wide_xlim=[-10,120] #[ms]
-        narrow_xlim=[0,0.5] #[ms]
-        fig=plt.figure(tight_layout=True)
-        #波形データをrow=0にfftデータをrow=1に保存する
-        axes = fig.subplots(2, 2)
-        samplerate=2.5*10**7
-        plot_wave(axes,[0,0],time_datas,volt_datas,wide_xlim,"whole voltage")
-        plot_wave(axes,[0,1],time_datas,volt_datas,narrow_xlim,f"patial voltage {narrow_xlim[0]}ms-{narrow_xlim[1]}ms")
-        plot_fft(axes,[1,0],volt_datas,samplerate,[0,1000000],f"amp spectal 1-1000000Hz")
-        plot_fft(axes,[1,1],volt_datas,samplerate,[0,10000], f"amp spectal 1-10000Hz")
-        plt.savefig(f"{dir_path}/{title}.png")
-        index+=1
-        
+    if "us_burst" in single_dir.name:
+        stim_type="us_burst"
+    elif "us_cont" in single_dir.name:
+        stim_type="us_cont"
+    else:
+        stim_type="undefined"
+    max_voltage=np.max(voltage_wave)
+    side_band_peak_value,side_band_freq=acquire_side_band_value_and_freq(freq,Amp,freq_us_range)
+    #計測したデータをpdに書き込み
+    stim_name=bin_file.stem[:-2]
+    if is_averaged:
+        trial="average"
+    else:
+        trial=bin_file.stem[-1]
+    data=[stim_name,trial,us_cent_freq_in_KHz,dist_in_mm,stim_type,
+        window_percentage,max_voltage,window_type,audible_range_ave_spectrum,
+        audible_range_max_spectrum_value,audible_range_max_spectrum_freq,
+        us_range_ave_spectrum,us_range_max_spectrum_value,us_range_max_spectrum_freq,
+        audible_low_range_sum,audible_middle_range_sum,audible_high_range_sum,
+        side_band_peak_value,side_band_freq
+        ]
+    record = pd.Series(data, index=df.columns,name=name)
+    df.append(record)
+    return
+
+def plot_and_make_df(data_dirs):
+    #データを保存するようのデータフレームの作成
+    cols=["stim_name","trial","cent_freq","distance","type","window_percentage","max_voltage",
+        "window_type","audible_range_spectrum_ave","audible_range_max_spectrum_value","audible_range_max_spectrum_freq",
+        "us_range_ave_spectrum","us_range_max_spectrum_value","us_range_max_spectrum_freq",
+        "audible_low_range_sum","audible_middle_range_sum","audible_high_range_sum",
+        "side_band_peak_value","side_band_peak_freq"]
+    statistic_df=pd.DataFrame(index=[],columns=cols)
+    cnt=0
+    for single_dir in data_dirs:
+        bin_files=list(single_dir.glob("*"))
+        for ind,bin_file in enumerate(bin_files):
+            print(f"processing {bin_file.name}")
+            samplerate,time_data,voltage_wave=bin_to_samplerate_and_arrays(bin_file)
+            title=bin_file.name[:-4]
+            plot_oscillo_data(samplerate,time_data,voltage_wave,title,single_dir.name,40)
+            append_statistic_data(voltage_wave,samplerate,is_averaged=False,df=statistic_df,name=cnt,single_dir=single_dir,bin_file=bin_file)
+            cnt+=1
+            print(f"record is appended: {cnt}")
+            if ind == 0:
+                wave_data=np.array([])
+            elif ind == len(bin_files)-1 or bin_files[ind].name[:-6] != bin_files[ind-1].name[:-6]:
+                averaged_wave=np.mean(wave_data,axis=0)
+                title=bin_file.name[:-5]+"ave"
+                plot_oscillo_data(samplerate,time_data,averaged_wave,title,single_dir.name,40)
+                append_statistic_data(averaged_wave,samplerate,is_averaged=True,df=statistic_df,name=cnt,single_dir=single_dir,bin_file=bin_file)
+                cnt+=1
+                print(f"record is appended: {cnt}")
+                wave_data=np.array([])
+            elif bin_files[ind].name[:-6] == bin_files[ind-1].name[:-6]:
+                if len(wave_data)==0:
+                    wave_data=voltage_wave
+                else:
+                    wave_data=np.vstack(wave_data,voltage_wave)
+    today = dt.datetime.now()
+    date_info=today.strftime("%y%m%d_%H%M")
+    statistic_df.to_excel(f"statistic_data_{date_info}.xlsx",index=False)
