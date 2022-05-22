@@ -10,6 +10,8 @@ from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
 from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
+from WaveStats import acquire_zscore_at_one_point
+
 
 def plastic_key(key):
     vol=re.search("[0-9]+(\.[0-9]+)*V",key)
@@ -24,6 +26,7 @@ def plastic_key(key):
     params="\n".join(params)
     plasticed_key=f"{vol}\n{params}"
     return plasticed_key
+
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)
@@ -129,6 +132,9 @@ def plot_abrs(data,axes,ylim,samplerate):
     i=0
     keys=data.keys()
     values=data.values()
+    samplerate_ms=samplerate//1000
+    p1_range=[1.5,2.8]
+    base_ms=[10,20]
     for key,value in zip(keys,values):
         xlim=[0,20]
         #sampling_rate
@@ -139,6 +145,10 @@ def plot_abrs(data,axes,ylim,samplerate):
         axes[i].set_ylim(ylim[0],ylim[1])
         if len(key)>=10:
             key=plastic_key(key)
+        max_timepoint=np.argmax(value[int(p1_range[0]*samplerate_ms):int(p1_range[1]*samplerate_ms)])/samplerate_ms+p1_range[0]
+        zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
+        if zscore>=3:
+            key="*"+key
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
         # Plot base line
         axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
