@@ -10,7 +10,7 @@ from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
 from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
-from WaveStats import acquire_zscore_at_one_point
+from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
 
 def plastic_key(key):
