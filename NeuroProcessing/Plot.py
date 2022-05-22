@@ -20,7 +20,7 @@ def plastic_key(key):
         print("vol not found")
         start=0
         vol=""
-    params=re.findall("[a-zA-Z]+_[0-9]+\.*[0-9]*[a-zA-Z]*",key[start:])
+    params=re.findall("[a-zA-Z]+_[0-9]+\.*[0-9]*μ*[a-zA-Z]*%*",key[start:])
     params="\n".join(params)
     plasticed_key=f"{vol}\n{params}"
     return plasticed_key
@@ -101,7 +101,7 @@ def plot_abr(abr_dic,title,dir_name,ylim):
     if len(abr_dic)>6:
         fig_size=[10,len(abr_dic)+1]
     else:
-        fig_size=[10,6]
+        fig_size=[10,7]
     fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=fig_size)
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
