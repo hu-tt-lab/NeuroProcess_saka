@@ -12,7 +12,7 @@ from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
 
 def plastic_key(key):
-    vol=re.search("[0-9]+V",key)
+    vol=re.search("[0-9]+(\.[0-9]+)*V",key)
     if vol!=None:
         start=vol.end()+1
         vol=vol.group(0)
