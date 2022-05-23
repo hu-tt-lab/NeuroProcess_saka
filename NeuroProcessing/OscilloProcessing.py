@@ -7,6 +7,7 @@ import gc
 import math
 import os
 from tokenize import String
+from unittest.mock import patch
 import numpy as np
 import pandas as pd
 
@@ -375,8 +376,27 @@ def rename_files_based_order_table(data_dir : Path, order_table: pd.DataFrame,co
         title=f"{title}_{counts[title]}"
         os.rename(bin_file,f"{bin_file.parent}\{title}{bin_file.suffix}")
         index+=1
+
+def convert_bin_to_npy(bin_file:Path,dir_path:Path):
+    if not os.path.exists("./npy"):
+        os.mkdir("./npy")
+    if not os.path.exists(f"./npy/{dir_path.name}"):
+        os.mkdir(f"./npy/{dir_path.name}")
+    samplerate,time_data,voltage_datas = bin_to_samplerate_and_arrays(bin_file)
+    saved_array=np.array([samplerate,time_data,voltage_datas])
+    np.save(f"./npy/{dir_path.name}/{bin_file.stem}",saved_array)
     return
 
+def convert_bin_to_npz(bin_file:Path, dir_path:Path):
+    if not os.path.exists("./npz"):
+        os.mkdir("./npz")
+    if not os.path.exists(f"./npz/{dir_path.name}"):
+        os.mkdir(f"./npz/{dir_path.name}")
+    samplerate,time_data,voltage_datas = bin_to_samplerate_and_arrays(bin_file)
+    saved_array=np.array([samplerate,time_data,voltage_datas])
+    np.savez_compressed(f"./npz/{dir_path.name}/{bin_file.stem}",saved_array)
+    return
+    
 if __name__== "__main__":
     bin_file="F:/experiment/20220506_fg_voltage/bin/01_us_burst_freq_500kHz_prf_1500Hz_pulse_150_window_0/usr_wf_data (00).bin"
     samplerate,time,volt=bin_to_samplerate_and_arrays(bin_file)

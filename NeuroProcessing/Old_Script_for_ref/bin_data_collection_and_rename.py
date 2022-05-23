@@ -1,9 +1,6 @@
 from fileinput import filename
 import os
 import re
-from path import Path
-
-
 from pathlib import Path
 
 single_dir = "Y:/Sakagami/20220506_fg_voltage/bin/06_us_burst_freq_500kHz_prf_1500Hz_pulse_1-100/"

@@ -10,19 +10,23 @@ from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
 from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
 
+from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
+
 
 def plastic_key(key):
-    vol=re.search("[0-9]+V",key)
+    vol=re.search("[0-9]+(\.[0-9]+)*V",key)
     if vol!=None:
         start=vol.end()+1
         vol=vol.group(0)
     else:
+        print("vol not found")
         start=0
         vol=""
-    params=re.findall("[a-z]+_([0-9]+|[0-9]+.[0-9]+)",key[start:]) 
+    params=re.findall("[a-zA-Z]+_[0-9]+\.*[0-9]*μ*[a-zA-Z]*%*",key[start:])
     params="\n".join(params)
     plasticed_key=f"{vol}\n{params}"
     return plasticed_key
+
 
 def plot_event(fig, axes, xlim):
     ax = fig.add_subplot(111, zorder=-1)
@@ -97,7 +101,11 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
 
 def plot_abr(abr_dic,title,dir_name,ylim):
     abr_dic=dict(sorted(abr_dic.items(),reverse=True))
-    fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=[10,6])
+    if len(abr_dic)>6:
+        fig_size=[10,len(abr_dic)+1]
+    else:
+        fig_size=[10,7]
+    fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=fig_size)
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
     fig.supxlabel("Time from Stimulation (ms)")
@@ -124,6 +132,9 @@ def plot_abrs(data,axes,ylim,samplerate):
     i=0
     keys=data.keys()
     values=data.values()
+    samplerate_ms=samplerate//1000
+    p1_range=[1.5,2.8]
+    base_ms=[10,20]
     for key,value in zip(keys,values):
         xlim=[0,20]
         #sampling_rate
@@ -134,6 +145,10 @@ def plot_abrs(data,axes,ylim,samplerate):
         axes[i].set_ylim(ylim[0],ylim[1])
         if len(key)>=10:
             key=plastic_key(key)
+        max_timepoint=np.argmax(value[int(p1_range[0]*samplerate_ms):int(p1_range[1]*samplerate_ms)])/samplerate_ms+p1_range[0]
+        zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
+        if zscore>=3:
+            key="*"+key
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
         # Plot base line
         axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
