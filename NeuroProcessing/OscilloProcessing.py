@@ -383,7 +383,7 @@ def convert_bin_to_npy(bin_file:Path,dir_path:Path):
     if not os.path.exists(f"./npy/{dir_path.name}"):
         os.mkdir(f"./npy/{dir_path.name}")
     samplerate,time_data,voltage_datas = bin_to_samplerate_and_arrays(bin_file)
-    saved_array=np.array([samplerate,time_data,voltage_datas])
+    saved_array=np.array([samplerate,time_data,voltage_datas],dtype=object)
     np.save(f"./npy/{dir_path.name}/{bin_file.stem}",saved_array)
     return
 
@@ -393,7 +393,7 @@ def convert_bin_to_npz(bin_file:Path, dir_path:Path):
     if not os.path.exists(f"./npz/{dir_path.name}"):
         os.mkdir(f"./npz/{dir_path.name}")
     samplerate,time_data,voltage_datas = bin_to_samplerate_and_arrays(bin_file)
-    saved_array=np.array([samplerate,time_data,voltage_datas])
+    saved_array=np.array([samplerate,time_data,voltage_datas],dtype=object)
     np.savez_compressed(f"./npz/{dir_path.name}/{bin_file.stem}",saved_array)
     return
     
