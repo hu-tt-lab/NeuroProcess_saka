@@ -12,4 +12,5 @@ NeuroProcessing/__init__.py
 NeuroProcessing.egg-info/PKG-INFO
 NeuroProcessing.egg-info/SOURCES.txt
 NeuroProcessing.egg-info/dependency_links.txt
+NeuroProcessing.egg-info/requires.txt
 NeuroProcessing.egg-info/top_level.txt
