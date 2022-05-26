@@ -1,2 +1,3 @@
 # ignore cache files
-./NeuroProcessing/__pycache__
+NeuroProcessing/__pycache__
+NeuroProcessing.egg-info
