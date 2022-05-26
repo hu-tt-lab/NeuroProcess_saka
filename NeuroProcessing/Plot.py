@@ -24,7 +24,7 @@ def plastic_key(key):
         vol=""
     params=re.findall("[a-zA-Z]+_[0-9]+\.*[0-9]*μ*[a-zA-Z]*%*",key[start:])
     params="\n".join(params)
-    plasticed_key=f"{vol}\n{params}"
+    plasticed_key=f"{vol}_{params}"
     return plasticed_key
 
 
@@ -99,13 +99,14 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
         i+=1
     return timestamp
 
-def plot_abr(abr_dic,title,dir_name,ylim):
+def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0):
     abr_dic=dict(sorted(abr_dic.items(),reverse=True))
     if len(abr_dic)>6:
         fig_size=[10,len(abr_dic)+1]
     else:
         fig_size=[10,7]
     fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=fig_size)
+    fig.subplots_adjust(left=left_adjust)
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
     fig.supxlabel("Time from Stimulation (ms)")
