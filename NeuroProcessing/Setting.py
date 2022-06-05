@@ -13,7 +13,7 @@ import warnings
 from pathlib import Path
 import re
 import json
-from typing import Literal, Tuple, List, Dict
+from typing import Literal, Tuple, List, Dict, Union
 import struct
 from decimal import *
 import csv
@@ -79,3 +79,22 @@ class RecordSetting:
             self.event_ch : str = params["event_ch"]
             self.lfp_ts_ch: str = params["lfp_ts_ch"]
             
+def get_args(func:function):
+    arg_names = func.__code__.co_varnames
+    return arg_names
+
+def extract_valid_args(kwargs_dict:dict, arg_names_or_func:Union[function,list,set]):
+    if arg_names_or_func is function:
+        arg_names=get_args(arg_names_or_func)
+    else:
+        arg_names=arg_names_or_func
+    res_dict={}
+    not_used_args=[]
+    for key,value in kwargs_dict.items():
+        if key in arg_names:
+            res_dict[key]=value
+        else:
+            not_used_args.appned(key)
+    print("these args aren't used in this function")
+    print(*not_used_args)
+    return res_dict

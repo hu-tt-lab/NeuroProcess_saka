@@ -14,3 +14,13 @@ if len(target_string)!=(start+4):
         dict[params[2*i]]=params[2*i+1]
     print(dict)
 print(volt)
+
+def kwargs_test2(a,b,**kwargs):
+    
+    kwargs_test(a,b,**kwargs)
+
+def kwargs_test(a="a",b="b",c="c",d="d"):
+    print(a,b,c,d)
+
+dict ={"c":"cc","d":"dd"}
+kwargs_test2("aa","bb",**dict)
