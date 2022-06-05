@@ -22,5 +22,6 @@ def kwargs_test2(a,b,**kwargs):
 def kwargs_test(a="a",b="b",c="c",d="d"):
     print(a,b,c,d)
 
+print(type(kwargs_test))
 dict ={"c":"cc","d":"dd"}
 kwargs_test2("aa","bb",**dict)
