@@ -1,3 +1,5 @@
 # ignore cache files
 NeuroProcessing/__pycache__
 NeuroProcessing.egg-info
+build
+dist

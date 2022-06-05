@@ -185,3 +185,52 @@ def plot_and_make_df(data_dirs):
     today = dt.datetime.now()
     date_info=today.strftime("%y%m%d_%H%M")
     statistic_df.to_excel(f"statistic_data_{date_info}.xlsx",index=False)
+    
+def append_statistic_data(voltage_wave:np.ndarray, samplerate:int ,is_averaged:bool, df:pd.DataFrame, name:str, single_dir:Path, signal_file:Path):
+    freq,Amp=acquire_amp_spectrum(voltage_wave,samplerate)
+    freq_audible_range=[200,800000]
+    audible_range_ave_spectrum=acquire_average_spectrum(freq,Amp,freq_audible_range)
+    audible_range_max_spectrum_value,audible_range_max_spectrum_freq = acquire_max_spectrum_value_and_freq(freq,Amp,freq_audible_range)
+    if "freq" in single_dir.name:
+        us_cent_freq_in_KHz=int(re.search("freq_(\d+)",single_dir.name).group(1))
+    else:
+        us_cent_freq_in_KHz=500
+    freq_us_range=[(us_cent_freq_in_KHz*1000-50000),(us_cent_freq_in_KHz*1000+50000)]
+    us_range_ave_spectrum=acquire_average_spectrum(freq,Amp,freq_us_range)
+    us_range_max_spectrum_value,us_range_max_spectrum_freq = acquire_max_spectrum_value_and_freq(freq,Amp,freq_us_range)
+    #可聴域周波数帯を抽出
+    freq_audible_low_range=[200,3000]
+    freq_audible_middle_range=[3000,60000]
+    freq_audible_high_range=[60000,80000]
+    audible_low_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_low_range)
+    audible_middle_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_middle_range)
+    audible_high_range_sum=acquire_sum_spectrum(freq,Amp,freq_audible_high_range)
+    dist_in_mm=int(re.search("dist_(\d+)mm",single_dir.name).group(1))
+    window_percentage=float(re.search("window_(\d+)",signal_file.name).group(1))
+    window_percentage=round(window_percentage,3)
+    if window_percentage <= 0.1:
+        window_type="rectangle"
+    else:
+        window_type="humming"
+    if "us_burst" in single_dir.name:
+        stim_type="us_burst"
+    elif "us_cont" in single_dir.name:
+        stim_type="us_cont"
+    else:
+        stim_type="undefined"
+    max_voltage=np.max(voltage_wave)
+    side_band_peak_value,side_band_freq=acquire_side_band_value_and_freq(freq,Amp,freq_us_range)
+    #計測したデータをpdに書き込み
+    stim_name=signal_file.stem[:-2]
+    if is_averaged:
+        trial="average"
+    else:
+        trial=signal_file.stem[-1]
+    datas=[stim_name,trial,us_cent_freq_in_KHz,dist_in_mm,stim_type,
+          window_percentage,max_voltage,window_type,audible_range_ave_spectrum,
+          audible_range_max_spectrum_value,audible_range_max_spectrum_freq,
+          us_range_ave_spectrum,us_range_max_spectrum_value,us_range_max_spectrum_freq,
+          audible_low_range_sum,audible_middle_range_sum,audible_high_range_sum,
+          side_band_peak_value,side_band_freq
+          ]
+    df.loc[name]=datas
