@@ -129,15 +129,14 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,**k
     gc.collect()
     
 
-def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [10,20]):
+def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [10,20],xlim:list[int]=[0,20],start_time_ms:int=0):
     i=0
     keys=data.keys()
     values=data.values()
     samplerate_ms=samplerate//1000
     for key,value in zip(keys,values):
-        xlim=[0,20]
         #sampling_rate
-        wave=value[:int(xlim[1]*samplerate/1000)]
+        wave=value[int((xlim[0]-start_time_ms)*samplerate_ms):int((xlim[1]-start_time_ms)*samplerate_ms)]
         # Set limits and label
         axes[i].set_facecolor("#ffffff00")
         axes[i].set_xlim(xlim[0],xlim[1])

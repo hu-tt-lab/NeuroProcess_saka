@@ -24,6 +24,5 @@ def kwargs_test(a="a",b="b",c="c",d="d"):
     print(a,b,c,d)
 
 print(type(kwargs_test))
-print(type(type(kwargs_test)) is type  )
 dict ={"c":"cc","d":"dd"}
 kwargs_test2("aa","bb",**dict)
