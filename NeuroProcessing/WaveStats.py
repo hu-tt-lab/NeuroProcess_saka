@@ -27,7 +27,6 @@ def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span
 
 def acquire_zscore_at_one_point(waveform,samplerate,time_range_ms,base_span_ms,timepoint_ms):
     samplerate_ms=samplerate//1000
-    timepoints=np.arange(time_range_ms[0],time_range_ms[1],1/samplerate_ms)
     if isinstance(waveform,list):
         waveform=np.array(waveform)
     base_span=waveform[int((base_span_ms[0]-time_range_ms[0])*samplerate_ms):int((base_span_ms[1]-time_range_ms[0])*samplerate_ms)]
