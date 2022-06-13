@@ -143,7 +143,7 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
         axes[i].set_ylim(ylim[0],ylim[1])
         if len(key)>=10:
             key=plastic_key(key)
-        max_timepoint=np.argmax(value[int(p1_range[0]*samplerate_ms):int(p1_range[1]*samplerate_ms)])/samplerate_ms+p1_range[0]
+        max_timepoint=np.argmax(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)])/samplerate_ms+p1_range[0]
         zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
         if zscore>=3:
             key="*"+key
