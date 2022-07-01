@@ -25,15 +25,16 @@ def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span
     
     return peak_voltage_uv,peak_latency_ms
 
-def acquire_zscore_at_one_point(waveform,samplerate,time_range_ms,base_span_ms,timepoint_ms):
+def acquire_zscore_at_one_point(waveform,samplerate,time_range_ms,base_span_ms,timepoint_ms,is_abs:bool=False):
     samplerate_ms=samplerate//1000
     if isinstance(waveform,list):
         waveform=np.array(waveform)
     base_span=waveform[int((base_span_ms[0]-time_range_ms[0])*samplerate_ms):int((base_span_ms[1]-time_range_ms[0])*samplerate_ms)]
-    if type(waveform)==list:
-        base_span=np.array(base_span)
     voltage=waveform[int((timepoint_ms-time_range_ms[0])*samplerate_ms)]
     base_mean=np.mean(base_span)
+    if is_abs:
+        voltage=abs(voltage)
+        base_mean=np.abs(base_mean)
     base_std=np.std(base_span)
     zscore=(voltage-base_mean)/base_std
     
