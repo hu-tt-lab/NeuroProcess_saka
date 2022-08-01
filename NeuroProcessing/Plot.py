@@ -114,10 +114,7 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,**k
     xlim=[0,20]
     
     plot_event(fig,axes,xlim)
-    if "TDT" in dir_name:
-        samplerate=25000
-    else:
-        samplerate=40000
+    samplerate=25000
     plot_abrs(abr_dic,axes,ylim,samplerate,**kwargs)
     if not (os.path.exists("./abr_images/")):
         os.mkdir("./abr_images")
@@ -143,10 +140,10 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
         axes[i].set_ylim(ylim[0],ylim[1])
         if len(key)>=10:
             key=plastic_key(key)
-        max_timepoint=np.argmax(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)])/samplerate_ms+p1_range[0]
-        zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
-        if zscore>=3:
-            key="*"+key
+        # max_timepoint=np.argmax(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)])/samplerate_ms+p1_range[0]
+        # zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
+        # if zscore>=3:
+        #     key="*"+key
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
         # Plot base line
         axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
