@@ -1,8 +1,10 @@
+from sqlite3 import Timestamp
 import wave
 import numpy as np
+import pandas as pd
 import scipy.io
 from scipy import signal
-from typing import Union
+from typing import List, Union
 #import own function
 from NeuroProcessing.Filter import lowpass
 from NeuroProcessing.Setting import PlotSetting, RecordSetting, WaveSetting
@@ -36,20 +38,7 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
     return timestamp
 
 
-def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:RecordSetting):
-    """_summary_
-
-    Args:
-        plx_filepath (_type_): _description_
-        offset (_type_): _description_
-        onset (_type_): _description_
-        record_setting (RecordSetting): _description_
-
-    Returns:
-        list: lfp_voltage_datas_array
-    """
-    #取得したpathを元にLFP波形を取得・加算平均を行う
-    mat_data=scipy.io.loadmat(plx_filepath)
+def acquire_lfp_timestamps_from_mat_data(mat_data, record_setting:RecordSetting):
     #timestampの取得
     spkc_samplerate=record_setting.spkc_samplerate
     event_ch_name=record_setting.event_ch
@@ -65,6 +54,9 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:RecordSettin
         spkc_timestamp=get_timestamp_from_law_ch(trigger_wave,0.05,0.3,spkc_samplerate)
         timestamp_time=(np.array(spkc_timestamp)+(mat_data["FP01_ts"][0]-mat_data["SPKC20_ts"][0])*spkc_samplerate)/(spkc_samplerate//1000)
         timestamp_fp=list(map(round,timestamp_time))
+    return timestamp_fp
+
+def additional_average_based_timestamps(mat_data,timestamp_fp: List[int] ,onset_ms:int, offset_ms: int, record_setting: RecordSetting):
     datas=[]
     for i in range(1, 17):
         fp_name = f"FP{str(i).zfill(2)}"
@@ -72,10 +64,10 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:RecordSettin
         each_channel_wave = list(
             each_channel_wave[j][0] for j in range(len(each_channel_wave)))
         index = 0
-        each_ch_wave=np.zeros(np.abs(onset)+np.abs(offset))
+        each_ch_wave=np.zeros(np.abs(onset_ms-offset_ms))
         for timepoint in timestamp_fp:
             each_wave = np.array(
-                each_channel_wave[timepoint+offset:timepoint+onset])
+                each_channel_wave[timepoint+offset_ms:timepoint+onset_ms])
             each_ch_wave+=each_wave
             index+=1
         #加算回数で割ってμVに直す
@@ -83,6 +75,56 @@ def process_lfp_from_FP_ch(plx_filepath,offset,onset,record_setting:RecordSettin
         each_ch_wave*=1000
         datas.append(each_ch_wave)
     return datas
+
+def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_ms, onset_ms, record_setting:RecordSetting):
+    """刺激名で取り出すのが面倒なのでdatasをlistに格納する形でreturnする
+
+    Args:
+        plx_filepath (_type_): _description_
+        abr_order (_type_): _description_
+        offset_ms (_type_): _description_
+        onset_ms (_type_): _description_
+        record_setting (RecordSetting): _description_
+    Return:
+        all_lfp_datas (List[List]): collection of each lfp response matrix(shape is [16][data length])
+    """
+    mat_data=scipy.io.loadmat(plx_filepath)
+    timestamp_fp= acquire_lfp_timestamps_from_mat_data(mat_data, record_setting)
+    #abr_order_fileの読み込み
+    abr_order=pd.read_csv(abr_order_path)
+    #刺激の回数だけがほしいので取り出し
+    ind=0
+    all_lfp_datas=[]
+    for trial in abr_order["trial"]:
+        each_stim_timestamps=timestamp_fp[ind:ind+trial]
+        datas=additional_average_based_timestamps(mat_data,each_stim_timestamps,onset_ms, offset_ms, record_setting)
+        ind+=trial
+        all_lfp_datas.append(datas)
+    return all_lfp_datas
+    
+    
+
+def process_lfp_from_FP_ch(plx_filepath,offset_ms,onset_ms,record_setting:RecordSetting):
+    """processed single stimulation to lfp
+
+    Args:
+        plx_filepath (_type_): _description_
+        offset_ms (_type_): _description_
+        onset_ms (_type_): _description_
+        record_setting (RecordSetting): _description_
+
+    Returns:
+        list: lfp_voltage_datas_array
+    """
+    #取得したpathを元にLFP波形を取得・加算平均を行う
+    mat_data=scipy.io.loadmat(plx_filepath)
+    #timestampの取得
+    timestamp_fp = acquire_lfp_timestamps_from_mat_data(mat_data,record_setting)
+    #timestampに基づいた加算平均の処理
+    datas= additional_average_based_timestamps(mat_data,timestamp_fp,onset_ms, offset_ms, record_setting)
+    return datas
+
+
 
 def process_abr(plx_filepath,xlim,is_diff):
     mat_data=scipy.io.loadmat(plx_filepath)
