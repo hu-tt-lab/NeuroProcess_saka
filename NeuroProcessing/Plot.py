@@ -24,7 +24,7 @@ def plastic_key(key):
         print("vol not found")
         start=0
         vol=""
-    params=re.findall("[a-zA-Z]*_[0-9]+\.*[0-9]*μ*[a-zA-Z]*%*",key[start:])
+    params=re.findall("[a-zA-Z]+_[0-9]+\.*[0-9]*μ*[a-zA-Z]*%*",key[start:])
     params="\n".join(params)
     plasticed_key=f"{vol}_{params}"
     return plasticed_key
