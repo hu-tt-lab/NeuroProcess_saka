@@ -15,6 +15,8 @@ from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
 def plastic_key(key):
     vol=re.search("[0-9]+(\.[0-9]+)*V",key)
+    if "sham" in key:
+        return key
     if vol!=None:
         start=vol.end()+1
         vol=vol.group(0)
