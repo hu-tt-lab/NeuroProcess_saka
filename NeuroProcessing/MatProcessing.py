@@ -68,8 +68,9 @@ def additional_average_based_timestamps(mat_data,timestamp_fp: List[int] ,onset_
         for timepoint in timestamp_fp:
             each_wave = np.array(
                 each_channel_wave[timepoint+offset_ms:timepoint+onset_ms])
-            each_ch_wave+=each_wave
-            index+=1
+            if len(each_ch_wave)==len(each_wave):
+                each_ch_wave+=each_wave
+                index+=1
         #加算回数で割ってμVに直す
         each_ch_wave/=index
         each_ch_wave*=1000
