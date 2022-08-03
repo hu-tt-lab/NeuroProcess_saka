@@ -2,7 +2,7 @@ import gc
 import numpy as np
 from scipy.signal import find_peaks
 
-def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span_ms):
+def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span_ms,is_min:bool = False):
     """acquire peak and latency of single waveform
 
     Args:
@@ -19,8 +19,12 @@ def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span
     wave_detect_span=waveform[int((detect_span_ms[0]-time_range_ms[0])*samplerate_ms):int((detect_span_ms[1]-time_range_ms[0])*samplerate_ms)]
     if type(waveform)==list:
         wave_detect_span=np.array(wave_detect_span)
-    peak_voltage_uv=np.max(np.abs(wave_detect_span))
-    peak_latency_ms=np.argmax(np.abs(wave_detect_span))/samplerate_ms
+    if is_min:
+        peak_voltage_uv=np.abs(np.min(wave_detect_span))
+        peak_latency_ms=np.argmin(wave_detect_span)/samplerate_ms
+    else:
+        peak_voltage_uv=np.max(np.abs(wave_detect_span))
+        peak_latency_ms=np.argmax(np.abs(wave_detect_span))/samplerate_ms
     peak_latency_ms=peak_latency_ms+detect_span_ms[0]
     
     return peak_voltage_uv,peak_latency_ms
