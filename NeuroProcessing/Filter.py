@@ -70,3 +70,9 @@ def acquire_amp_spectrum(voltage_data: Union[list,np.ndarray],samplerate:int):
     freq=np.fft.fftfreq(n=point,d=d)
     Amp=np.abs(F/(point/2))
     return freq,Amp
+
+
+def acquire_power_spectrum(voltage_data: Union[list,np.ndarray],samplerate:int):
+    freq,Amp = acquire_amp_spectrum(voltage_data, samplerate)
+    Amp=np.power(Amp,2)
+    return freq,Amp

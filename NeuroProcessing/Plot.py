@@ -8,7 +8,7 @@ import gc
 # import own function
 from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
-from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline
+from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline,acquire_power_spectrum
 
 from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
@@ -275,6 +275,21 @@ def plot_fft(axes,index,volt_datas,samplerate,xlim,title):
     col=index[1]
     ax=axes[row][col]
     freq,Amp= acquire_amp_spectrum(volt_datas,samplerate)
+    left_point=np.where(freq==freq[freq>=xlim[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=xlim[1]])
+    xlim_point=[left_point,right_point]
+    ax.plot(freq[xlim_point[0]:xlim_point[1]], Amp[xlim_point[0]:xlim_point[1]],color="k")
+    ax.set_xlabel("Freqency [Hz]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title(title)
+    
+
+def plot_power_fft(axes,index,volt_datas,samplerate,xlim,title):
+    #振幅スペクトルを描画する
+    row=index[0]
+    col=index[1]
+    ax=axes[row][col]
+    freq,Amp= acquire_power_spectrum(volt_datas,samplerate)
     left_point=np.where(freq==freq[freq>=xlim[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=xlim[1]])
     xlim_point=[left_point,right_point]
