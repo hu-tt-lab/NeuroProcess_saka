@@ -65,10 +65,10 @@ def acquire_max_spectrum_value_and_freq(freq:np.ndarray ,amp:np.ndarray, target_
     del target_freq_range
     gc.collect()
     return max_amp,target_freq
-
 def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
     left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    print(freq[left_point],freq[right_point])
     sum_spectrum=np.sum(amp[left_point:right_point])
     return sum_spectrum
 
@@ -76,6 +76,7 @@ def acquire_average_spectrum(freq:np.ndarray,amp:np.ndarray,target_freq_range:li
     left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
     mean_spectrum=np.mean(amp[left_point:right_point])
+    print(freq[left_point],freq[right_point])
     return mean_spectrum
 
 def find_peaks_from_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float], width:int):

@@ -30,14 +30,15 @@ def plastic_key(key):
     return plasticed_key
 
 
-def plot_event(fig, axes, xlim):
+def plot_event(fig, axes, xlim, is_single=False):
     ax = fig.add_subplot(111, zorder=-1)
     ax.set_xlim(xlim[0], xlim[1])
     ax.spines.top.set_visible(False)
     ax.spines.right.set_visible(False)
     ax.spines.left.set_visible(False)
     ax.spines.bottom.set_position(("outward", 10))
-    ax.get_shared_x_axes().join(ax, axes[0])
+    if not is_single:
+        ax.get_shared_x_axes().join(ax, axes[0])
     ax.tick_params(left=False, labelleft=False, right=False)
     ax.set_ylim([0, 1])
     ax.plot([0, 0], [0, 1], color="k", alpha=0.3)
@@ -256,10 +257,13 @@ def plot_fourier_spectal_from_dic(dic,dir_name,xlim,samplerate):
         gc.collect()
     return
 
-def plot_wave(axes,index,time_datas,volt_datas,xlim,title):
-    row=index[0]
-    col=index[1]
-    ax=axes[row][col]
+def plot_wave(axes,index,time_datas,volt_datas,xlim,title,is_single=False):
+    if is_single:
+        ax = axes
+    else:
+        row=index[0]
+        col=index[1]
+        ax=axes[row][col]
     time_datas=np.array(time_datas)
     ax.plot(time_datas,volt_datas,color="k")
     ax.set_xlim(xlim)
