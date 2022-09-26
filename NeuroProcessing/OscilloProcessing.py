@@ -193,7 +193,7 @@ def bin_to_csv(file,csv_filename,dir_name = None):
             
         #-------------------------copy data to csv------------------------------
         print('BLOCK{} writing to csv...'.format(k))    
-        with open('test.csv','a',newline='') as csvfile:
+        with open(f'{dir_path}{csv_filename}','a',newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(csv_ch_time_volt)
             del csv_ch_time_volt

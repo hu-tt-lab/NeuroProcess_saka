@@ -35,10 +35,10 @@ def acquire_zscore_at_one_point(waveform,samplerate,time_range_ms,base_span_ms,t
         waveform=np.array(waveform)
     base_span=waveform[int((base_span_ms[0]-time_range_ms[0])*samplerate_ms):int((base_span_ms[1]-time_range_ms[0])*samplerate_ms)]
     voltage=waveform[int((timepoint_ms-time_range_ms[0])*samplerate_ms)]
-    base_mean=np.mean(base_span)
     if is_abs:
         voltage=abs(voltage)
-        base_mean=np.abs(base_mean)
+        base_span=np.abs(base_span)
+    base_mean=np.mean(base_span)
     base_std=np.std(base_span)
     zscore=(voltage-base_mean)/base_std
     
