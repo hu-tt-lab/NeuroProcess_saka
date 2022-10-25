@@ -1,5 +1,6 @@
 import gc
 import numpy as np
+import scipy
 from scipy.signal import find_peaks
 
 def acquire_peak_uv_and_latency_ms(waveform,time_range_ms,samplerate,detect_span_ms,is_min:bool = False):
@@ -66,6 +67,15 @@ def acquire_max_spectrum_value_and_freq(freq:np.ndarray ,amp:np.ndarray, target_
     gc.collect()
     return max_amp,target_freq
 def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
+    left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
+    right_point=np.argmax(freq[freq<=target_freq_range[1]])
+    print(freq[left_point],freq[right_point])
+    integral_span = freq[left_point:right_point]
+    integral_amp = amp[left_point:right_point]
+    integral_spectrum = scipy.integrate.simps(integral_amp,integral_span)
+    return integral_spectrum
+
+def acquire_intgral_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
     left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
     print(freq[left_point],freq[right_point])

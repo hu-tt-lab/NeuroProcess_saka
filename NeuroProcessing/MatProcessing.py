@@ -42,6 +42,8 @@ def acquire_lfp_timestamps_from_mat_data(mat_data, record_setting:RecordSetting)
     #timestampの取得
     spkc_samplerate=record_setting.spkc_samplerate
     event_ch_name=record_setting.event_ch
+    print(mat_data.keys())
+    print(event_ch_name in mat_data)
     if event_ch_name in mat_data:
         trigger_wave = mat_data[event_ch_name]
         trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
@@ -49,7 +51,7 @@ def acquire_lfp_timestamps_from_mat_data(mat_data, record_setting:RecordSetting)
         timestamp_fp = list(round(trigger_wave[i]-float(mat_data["FP01_ts"][0]),3)*1000 for i in range(len(trigger_wave)))
         timestamp_fp = list(map(int,timestamp_fp))
     else:
-        trigger_wave= mat_data[record_setting.low_trigger_ch]
+        trigger_wave= mat_data[record_setting.law_trigger_ch]
         trigger_wave = list(trigger_wave[j][0] for j in range(len(trigger_wave)))
         spkc_timestamp=get_timestamp_from_law_ch(trigger_wave,0.05,0.3,spkc_samplerate)
         timestamp_time=(np.array(spkc_timestamp)+(mat_data["FP01_ts"][0]-mat_data["SPKC20_ts"][0])*spkc_samplerate)/(spkc_samplerate//1000)
