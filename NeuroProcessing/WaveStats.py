@@ -66,7 +66,8 @@ def acquire_max_spectrum_value_and_freq(freq:np.ndarray ,amp:np.ndarray, target_
     del target_freq_range
     gc.collect()
     return max_amp,target_freq
-def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
+
+def acquire_intgral_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
     left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
     print(freq[left_point],freq[right_point])
@@ -75,7 +76,7 @@ def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list
     integral_spectrum = scipy.integrate.simps(integral_amp,integral_span)
     return integral_spectrum
 
-def acquire_intgral_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
+def acquire_sum_spectrum(freq:np.ndarray, amp:np.ndarray, target_freq_range:list[float]):
     left_point=np.where(freq==freq[freq>=target_freq_range[0]][0])[0][0]
     right_point=np.argmax(freq[freq<=target_freq_range[1]])
     print(freq[left_point],freq[right_point])
