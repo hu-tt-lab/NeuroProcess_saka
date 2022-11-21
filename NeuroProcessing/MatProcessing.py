@@ -191,6 +191,27 @@ def reshape_lfps(lfp_data,channelmap):
             all_waveform=np.vstack([all_waveform,wave])
     return all_waveform
 
+def remove_dc_bias(waveform,samplerate,total_range_ms,base_range_ms):
+    if len(waveform) == 16:
+        result_waveform = [] 
+        for each_wave in waveform:
+            averaged_waveform = remove_dc_bias_one_channel(each_wave,samplerate,total_range_ms,base_range_ms)
+            result_waveform.append(averaged_waveform)
+    else:
+        result_waveform =remove_dc_bias_one_channel(waveform,samplerate,total_range_ms,base_range_ms)
+    return result_waveform
+    
+def remove_dc_bias_one_channel(waveform,samplerate,total_range_ms,base_range_ms):
+    samplerate_ms = samplerate//1000
+    indexes = np.arange(total_range_ms[0],total_range_ms[1],samplerate_ms)
+    target_time_start = np.where(indexes==base_range_ms[0])[0][0]
+    target_time_end = np.where(indexes==base_range_ms[1])[0][0]
+    target_range = waveform[target_time_start:target_time_end]
+    dc_bias  = np.mean(target_range)
+    return waveform-dc_bias
+    
+    
+
 #test code
 if __name__ == "__main__":
     record_setting=RecordSetting()
