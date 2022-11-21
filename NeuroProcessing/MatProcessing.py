@@ -103,7 +103,7 @@ def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_m
         each_stim_timestamps=timestamp_fp[ind:ind+trial]
         datas=additional_average_based_timestamps(mat_data,each_stim_timestamps,onset_ms, offset_ms, record_setting)
         if is_remove_bias:
-            datas = remove_dc_bias(datas,record_setting.fp_samplerate,record_setting.extract_time_span,record_setting.base_time_span)
+            datas = remove_dc_bias(datas,record_setting.fp_samplerate,record_setting.extract_timespan,record_setting.base_timespan)
         ind+=trial
         all_lfp_datas.append(datas)
     return all_lfp_datas
