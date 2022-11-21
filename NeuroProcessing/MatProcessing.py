@@ -79,7 +79,7 @@ def additional_average_based_timestamps(mat_data,timestamp_fp: List[int] ,onset_
         datas.append(each_ch_wave)
     return datas
 
-def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_ms, onset_ms, record_setting:RecordSetting):
+def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_ms, onset_ms, record_setting:RecordSetting,is_remove_bias = True):
     """刺激名で取り出すのが面倒なのでdatasをlistに格納する形でreturnする
 
     Args:
@@ -88,6 +88,7 @@ def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_m
         offset_ms (_type_): _description_
         onset_ms (_type_): _description_
         record_setting (RecordSetting): _description_
+        is_remove_bias: bool
     Return:
         all_lfp_datas (List[List]): collection of each lfp response matrix(shape is [16][data length])
     """
@@ -101,6 +102,8 @@ def process_lfp_from_FP_ch_based_abr_order(plx_filepath,abr_order_path, offset_m
     for trial in abr_order["trial"]:
         each_stim_timestamps=timestamp_fp[ind:ind+trial]
         datas=additional_average_based_timestamps(mat_data,each_stim_timestamps,onset_ms, offset_ms, record_setting)
+        if is_remove_bias:
+            datas = remove_dc_bias(datas,record_setting.fp_samplerate,record_setting.extract_time_span,record_setting.base_time_span)
         ind+=trial
         all_lfp_datas.append(datas)
     return all_lfp_datas

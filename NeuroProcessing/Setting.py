@@ -97,7 +97,10 @@ class RecordSetting:
     default_data = {
     "event_ch" : "EVT01",
     "spkc_samplerate" : 40000,
-    "lfp_ts_ch" : "FP01_ts"
+    "fp_samplerate":1000,
+    "lfp_ts_ch" : "FP01_ts",
+    "extract_timespan":[-50,350],
+    "base_timespan":[-50,0]
     }
     def __init__(self,json_filename:str = ""):
         if len(json_filename)==0:
