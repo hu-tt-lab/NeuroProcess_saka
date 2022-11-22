@@ -8,7 +8,7 @@ import gc
 # import own function
 from NeuroProcessing.Setting import PlotSetting
 from NeuroProcessing.MatProcessing import reshape_lfps
-from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline,acquire_power_spectrum
+from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline,acquire_power_spectrum,moving_average_for_time_direction
 
 from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
@@ -191,7 +191,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
@@ -199,7 +199,8 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name):
     inter_length=np.arange(len(gradient))
     csd=spline(gradient,5,0)
     # 平滑化の処理をいれたい
-    
+    if is_gradient:
+        csd = moving_average_for_time_direction(csd,average_size=5,mode="valid")
     vrange=vrange
     fig=plt.figure()
     xlim=[-50,350]
