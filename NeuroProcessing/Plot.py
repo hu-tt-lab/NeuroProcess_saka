@@ -198,6 +198,8 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name):
     gradient= gradient_double(reshape_datas)
     inter_length=np.arange(len(gradient))
     csd=spline(gradient,5,0)
+    # 平滑化の処理をいれたい
+    
     vrange=vrange
     fig=plt.figure()
     xlim=[-50,350]
