@@ -78,7 +78,7 @@ def acquire_power_spectrum(voltage_data: Union[list,np.ndarray],samplerate:int):
     return freq,Amp
 
 def moving_average_for_time_direction(waveform:Union[list,np.ndarray],average_size:int = 5, mode:str="valid"):
-    if isinstance(waveform) == list:
+    if isinstance(waveform,list):
         waveform = np.array(waveform)
     moving_average = np.array([np.convolve(wave,np.ones(average_size),mode=mode) for wave in waveform])
     return moving_average
