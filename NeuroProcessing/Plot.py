@@ -191,7 +191,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
@@ -200,7 +200,7 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     csd=spline(gradient,5,0)
     # 平滑化の処理をいれたい
     if is_gradient:
-        csd = moving_average_for_time_direction(csd,average_size=5,mode="valid")
+        csd = moving_average_for_time_direction(csd,average_size=gradient_size,mode="valid")
     vrange=vrange
     fig=plt.figure()
     xlim=[-50,350]
