@@ -194,7 +194,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
 def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
-    reshape_datas=moving_average_for_time_direction(csd,average_size=gradient_size,mode="same")
+    reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
     gradient= gradient_double(reshape_datas)
     inter_length=np.arange(len(gradient))
