@@ -12,6 +12,7 @@ from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double,spline,
 
 from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
+plt.rcParams["font.family"] = "Times New Roman"
 
 def plastic_key(key):
     vol=re.search("[0-9]+(\.[0-9]+)*V",key)
@@ -109,7 +110,7 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_
         fig_size=[10,len(abr_dic)+1]
     else:
         fig_size=[10,7]
-    fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=fig_size)
+    fig,axes= plt.subplots(nrows=len(abr_dic.keys()),sharex=True,figsize=fig_size,dpi = 600)
     fig.subplots_adjust(left=left_adjust)
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
