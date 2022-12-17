@@ -43,7 +43,7 @@ class PlotSetting():
     default_data={
     "xlim" : [-50,350],
     "ylim" : [-200,200],
-    "channelmap" : [8,9,7,10,4,13,5,12,2,15,1,16,3,14,6,11],
+    "channelmap" : [9,8,10,7,13,4,12,5,15,2,16,1,14,3,11,6],
     "linewidth" : 2,
     "xlabel" : "time from stimulation[ms]",
     "ylabel" : "depth[μm]",
