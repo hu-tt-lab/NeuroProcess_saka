@@ -47,9 +47,13 @@ def notchpass(x,threshold,samplerate):
     spectral[-index[1]:-index[0]] = 0
     return fftpack.ifft(spectral, axis=0).real
 
-def source(wave, d: float=0.05):
+def source(wave, d: float=0.05, inverse = False):
     # 0.3は脳に置ける電流の伝導率
-    return -0.3 * np.gradient(np.gradient(wave, axis=1), axis=1) / (d**2)
+    if inverse:
+        minus = -1
+    else:
+        minus = 1
+    return minus* 0.3 * np.gradient(np.gradient(wave, axis=1), axis=1) / (d**2)
 
 def gradient_double(wave,axis: int=0):
     return np.gradient(np.gradient(wave, axis=axis), axis=axis)
