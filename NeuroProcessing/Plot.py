@@ -205,7 +205,6 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     if is_gradient:
         csd = moving_average_for_time_direction(csd,average_size=gradient_size,mode="same")
     vrange=vrange
-    fig=plt.figure()
     xlim=[-50,350]
     fig=plt.figure(facecolor="white")
     ax=fig.add_subplot(111)
