@@ -55,8 +55,8 @@ def source(wave, d: float=0.05, inverse = False):
         minus = 1
     return minus* 0.3 * np.gradient(np.gradient(wave, axis=1), axis=1) / (d**2)
 
-def gradient_double(wave,axis: int=0):
-    return np.gradient(np.gradient(wave, axis=axis), axis=axis)
+def gradient_double(wave,axis: int=0, coeff = -1):
+    return coeff * np.gradient(np.gradient(wave, axis=axis), axis=axis)
 
 def blur(reshape_data,size,axis):
     return ndimage.uniform_filter1d(reshape_data,size,axis)
