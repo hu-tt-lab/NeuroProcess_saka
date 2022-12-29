@@ -198,7 +198,7 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     reshape_datas=np.flipud(reshape_datas)
     reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
-    gradient= source(reshape_datas)
+    gradient= gradient_double(reshape_datas)
     inter_length=np.arange(len(gradient))
     csd=spline(gradient,5,0)
     # 平滑化の処理をいれたい
