@@ -6,3 +6,4 @@ from NeuroProcessing.Plot import *
 from NeuroProcessing.TDTProcessing import *
 from NeuroProcessing.WaveStats import *
 from NeuroProcessing.FileOperating import *
+from NeuroProcessing.UltrasoundWaveform import *

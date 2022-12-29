@@ -112,6 +112,15 @@ class RecordSetting:
                 self.spkc_samplerate: int = params["spkc_samplerate"]
                 self.event_ch : str = params["event_ch"]
                 self.lfp_ts_ch: str = params["lfp_ts_ch"]
+
+class MakingIdealUSWaveform():
+    def __init__(self, samplerate:int = 50000000, duration_ms:int = 22, offset_ms:int = -3,centfreq:int = 500000):
+        self.samplerate =samplerate
+        self.samplerate_ms = samplerate//1000
+        self.duration_ms = duration_ms
+        self.offset_ms = offset_ms
+        self.centfreq = centfreq
+        self.offset_span_ms=np.zeros((abs(self.offset_ms)*self.samplerate_ms))
             
 def get_args(func:Any):
     #function型を使おうとするとerrorになるため一旦引数をAny型に変更
