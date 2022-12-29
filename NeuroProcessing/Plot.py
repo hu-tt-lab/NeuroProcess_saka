@@ -225,6 +225,7 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     title=f"csd_{param}"
     plt.title(title)
     plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')
+    plt.cla()
     plt.clf()
     plt.close()
     gc.collect()
