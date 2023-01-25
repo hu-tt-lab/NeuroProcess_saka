@@ -13,6 +13,7 @@ from NeuroProcessing.Filter import acquire_amp_spectrum, gradient_double, source
 from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 
 plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["font.size"] = 14
 
 def plastic_key(key):
     vol=re.search("[0-9]+(\.[0-9]+)*V",key)
@@ -131,7 +132,7 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_
     gc.collect()
     
 
-def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [10,20],xlim:list[int]=[0,20],start_time_ms:int=0):
+def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [-10,0],xlim:list[int]=[0,20],start_time_ms:int=0,is_peak:bool = True, is_star =False,threshold = 4.36,is_plastic=True):
     i=0
     keys=data.keys()
     values=data.values()
@@ -143,12 +144,12 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
         axes[i].set_facecolor("#ffffff00")
         axes[i].set_xlim(xlim[0],xlim[1])
         axes[i].set_ylim(ylim[0],ylim[1])
-        if len(key)>=10:
+        if is_plastic:
             key=plastic_key(key)
-        # max_timepoint=np.argmax(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)])/samplerate_ms+p1_range[0]
-        # zscore=acquire_zscore_at_one_point(value,samplerate,xlim,base_ms,max_timepoint)
-        # if zscore>=3:
-        #     key="*"+key
+        max_timepoint=np.argmax(np.abs(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)]))/samplerate_ms+p1_range[0]
+        zscore=acquire_zscore_at_one_point(value,samplerate,[-20,30],base_ms,max_timepoint,is_abs=True)
+        if zscore >= threshold and is_star:
+            key="*"+key
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
         # Plot base line
         axes[i].plot(xlim, [0, 0], color="k", alpha=0.3, linestyle="--")
@@ -157,6 +158,14 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
         if len(wave)<=len(time):
             time=time[:len(wave)]
         axes[i].plot(time, wave, color="k", clip_on=False,)
+        if is_peak:
+            max_point_y = 1
+            if max_point_y < ylim[1]:
+                max_point_y+=0.2
+            else:
+                max_point_y-=0.2
+            axes[i].scatter(max_timepoint,max_point_y, color ="k", s= 50, marker ="*")
+        
         # Format spines and ticks
         if i == len(keys)-1:
             axes[i].spines['top'].set_visible(False)
@@ -166,10 +175,12 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
             axes[i].tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
             axes[i].yaxis.tick_right()
             axes[i].set_yticks([ylim[0], 0, ylim[1]])
-            axes[i].set_yticklabels([str(ylim[0]), "0 μV", str(ylim[1])])
+            axes[i].set_yticklabels([str(ylim[0]), "0 μV", str(ylim[1])],fontsize=10)
         else:
             format_axis(axes[i])
         i+=1
+    axes[0].scatter(0,ylim[1],marker="v",s = 300, color="k")
+    axes[0].text(-1.5,ylim[1]-0.2,"stim onset",fontsize=14)
     return
 
 
@@ -178,8 +189,8 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     title=f"LFP {title_and_filename}"
     fig.patch.set_facecolor('white')
     fig.suptitle(title)
-    fig.supxlabel("Time from Stimulation (ms)")
-    fig.supylabel("Depth from Bran Surface (µm)")
+    fig.supxlabel("Time from Stimulation [ms]")
+    fig.supylabel("Depth from Bran Surface [µm]")
     plot_event(fig, axes, xlim)
     plot_channels(lfp_data,axes,channelmap,xlim,ylim)
     if not(os.path.exists("./lfp_plot")):
@@ -193,12 +204,12 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
     #csd = blur(gradient_double(spline(blur(reshape_data, 3, axis=1), 4, axis=1)), 5, axis=1)
-    gradient= gradient_double(reshape_datas)
+    gradient= source(reshape_datas,axis=axis,inverse=inverse)
     inter_length=np.arange(len(gradient))
     csd=spline(gradient,5,0)
     # 平滑化の処理をいれたい
@@ -212,17 +223,18 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     y = np.linspace( 25, 725, len(csd))
     X,Y=np.meshgrid(x,y[::-1])
     pcm=ax.pcolormesh(X,Y,csd,cmap="jet", shading="auto",vmax=vrange, vmin=-vrange,rasterized=True)
-    plt.colorbar(pcm,label="[μV/mm$^2$]")
+    plt.colorbar(pcm,label="[mV/mm$^2$]")
     ax.invert_yaxis()
     ax.set_yticks(np.arange(50,750,50))
-    ax.set_ylabel("depth[μm]")
-    ax.set_xlabel("time from stimulation[ms]")
+    ax.set_ylabel("depth [μm]")
+    ax.set_xlabel("time from stimulation [ms]")
     if not(os.path.exists("./csd_fig")):
         os.mkdir("./csd_fig")
     if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
         os.mkdir(f"./csd_fig/{save_fig_dir_name}")
     title=f"csd_{param}"
     plt.title(title)
+    plt.tight_layout()
     plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')
     plt.cla()
     plt.clf()
