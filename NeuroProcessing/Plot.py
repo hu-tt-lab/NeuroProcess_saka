@@ -184,7 +184,7 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
     return
 
 
-def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name):
+def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name,**kwargs):
     fig, axes = plt.subplots(nrows=len(channelmap), sharex=True, figsize=[9,6])
     title=f"LFP {title_and_filename}"
     fig.patch.set_facecolor('white')
@@ -192,7 +192,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name)
     fig.supxlabel("Time from Stimulation [ms]")
     fig.supylabel("Depth from Bran Surface [µm]")
     plot_event(fig, axes, xlim)
-    plot_channels(lfp_data,axes,channelmap,xlim,ylim)
+    plot_channels(lfp_data,axes,channelmap,xlim,ylim,**kwargs)
     if not(os.path.exists("./lfp_plot")):
         os.mkdir("./lfp_plot")
     if not(os.path.exists(f"./lfp_plot/{save_fig_dir_name}")):
