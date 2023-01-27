@@ -233,7 +233,7 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
         os.mkdir(f"./csd_fig/{save_fig_dir_name}")
     title=f"csd_{param}"
-    plt.title(title)
+    plt.title("")
     plt.tight_layout()
     plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')
     plt.cla()
