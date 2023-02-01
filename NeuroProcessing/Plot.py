@@ -203,7 +203,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name,
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
@@ -218,12 +218,12 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     fig=plt.figure(facecolor="white")
     ax=fig.add_subplot(111)
     x = np.linspace(xlim[0] , xlim[1], len(csd[0]))
-    y = np.linspace( 25, 725, len(csd))
+    y = np.linspace( depth_range[0]+ch_distance/2, depth_range[1]-ch_distance/2, len(csd))
     X,Y=np.meshgrid(x,y[::-1])
     pcm=ax.pcolormesh(X,Y,csd,cmap="jet", shading="auto",vmax=vrange, vmin=-vrange,rasterized=True)
     plt.colorbar(pcm,label="[mV/mm$^2$]")
     ax.invert_yaxis()
-    ax.set_yticks(np.arange(50,750,50))
+    ax.set_yticks(np.arange(depth_range[0]+ch_distance,depth_range[1],ch_distance))
     ax.set_ylabel("depth [μm]")
     ax.set_xlabel("time from stimulation [ms]")
     if not(os.path.exists("./csd_fig")):
