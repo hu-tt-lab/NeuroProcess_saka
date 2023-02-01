@@ -104,7 +104,7 @@ def get_timestamp_from_law_ch(single_channel_data,Th,isi,samplerate):
         i+=1
     return timestamp
 
-def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_sort:bool = True,**kwargs):
+def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_sort:bool = True,samplerate=25000,**kwargs):
     if is_sort:
         abr_dic=dict(sorted(abr_dic.items(),reverse=True))
     if len(abr_dic)>6:
@@ -120,7 +120,6 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_
     xlim=[0,20]
     
     plot_event(fig,axes,xlim)
-    samplerate=25000
     plot_abrs(abr_dic,axes,ylim,samplerate,**kwargs)
     if not (os.path.exists("./abr_images/")):
         os.mkdir("./abr_images")
@@ -132,7 +131,7 @@ def plot_abr(abr_dic:dict,title:str,dir_name,ylim:list,left_adjust:float=0.1,is_
     gc.collect()
     
 
-def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [-10,0],xlim:list[int]=[0,20],start_time_ms:int=0,is_peak:bool = True, is_star =False,threshold = 4.36,is_plastic=True):
+def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms:list[int]= [-10,0],xlim:list[int]=[0,20],start_time_ms:int=0,is_peak:bool = True, is_star =False,threshold = 4.36,is_plastic=True,z_score_whole_time_range = [-20, 30]):
     i=0
     keys=data.keys()
     values=data.values()
@@ -147,7 +146,7 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
         if is_plastic:
             key=plastic_key(key)
         max_timepoint=np.argmax(np.abs(value[int((p1_range[0]-start_time_ms)*samplerate_ms):int((p1_range[1]-start_time_ms)*samplerate_ms)]))/samplerate_ms+p1_range[0]
-        zscore=acquire_zscore_at_one_point(value,samplerate,[-20,30],base_ms,max_timepoint,is_abs=True)
+        zscore=acquire_zscore_at_one_point(value,samplerate,z_score_whole_time_range,base_ms,max_timepoint,is_abs=True)
         if zscore >= threshold and is_star:
             key="*"+key
         axes[i].set_ylabel(key, rotation=0, ha="right", va="center")
@@ -216,7 +215,6 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     if is_gradient:
         csd = moving_average_for_time_direction(csd,average_size=gradient_size,mode="same")
     vrange=vrange
-    xlim=[-50,350]
     fig=plt.figure(facecolor="white")
     ax=fig.add_subplot(111)
     x = np.linspace(xlim[0] , xlim[1], len(csd[0]))
