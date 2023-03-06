@@ -203,7 +203,7 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name,
     del fig
     gc.collect()
 
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50):
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50,is_standardized=False):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
@@ -214,7 +214,9 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     # 平滑化の処理をいれたい
     if is_gradient:
         csd = moving_average_for_time_direction(csd,average_size=gradient_size,mode="same")
-    vrange=vrange
+    if is_standardized:
+        csd = csd/np.max(csd)
+        vrange = 1
     fig=plt.figure(facecolor="white")
     ax=fig.add_subplot(111)
     x = np.linspace(xlim[0] , xlim[1], len(csd[0]))
@@ -222,6 +224,8 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     X,Y=np.meshgrid(x,y[::-1])
     pcm=ax.pcolormesh(X,Y,csd,cmap="jet", shading="auto",vmax=vrange, vmin=-vrange,rasterized=True)
     plt.colorbar(pcm,label="[mV/mm$^2$]")
+    if is_standardized:
+        plt.colorbar(pcm,label="standalized csd")
     ax.invert_yaxis()
     ax.set_yticks(np.arange(depth_range[0]+ch_distance,depth_range[1],ch_distance))
     ax.set_ylabel("depth [μm]")
@@ -231,7 +235,6 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
         os.mkdir(f"./csd_fig/{save_fig_dir_name}")
     title=f"csd_{param}"
-    plt.title("")
     plt.tight_layout()
     plt.savefig(f'./csd_fig/{save_fig_dir_name}/{title}.png')
     plt.cla()
