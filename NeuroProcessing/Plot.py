@@ -179,7 +179,7 @@ def plot_abrs(data,axes,ylim,samplerate,p1_range:list[float]=[1.5, 2.8], base_ms
             format_axis(axes[i])
         i+=1
     axes[0].scatter(0,ylim[1],marker="v",s = 300, color="k")
-    axes[0].text(-1.5,ylim[1]-0.2,"stim onset",fontsize=14)
+    axes[0].text(xlim[0]+abs(xlim[0]*0.2),ylim[1]-abs(ylim[1]*0.2),"stim onset",fontsize=14)
     return
 
 
@@ -202,8 +202,8 @@ def plot_lfp(lfp_data,channelmap,ylim,xlim,title_and_filename,save_fig_dir_name,
     del axes
     del fig
     gc.collect()
-
-def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50,is_standardized=False):
+    
+def plot_csd_figure(fig,ax,lfp_data,channelmap,xlim,vrange,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50,is_standardized=False,ylim=[100,700]):
     reshape_datas=reshape_lfps(lfp_data,channelmap)
     reshape_datas=np.flipud(reshape_datas)
     reshape_datas=moving_average_for_time_direction(reshape_datas,average_size=gradient_size,mode="same")
@@ -215,21 +215,31 @@ def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient
     if is_gradient:
         csd = moving_average_for_time_direction(csd,average_size=gradient_size,mode="same")
     if is_standardized:
-        csd = csd/np.max(csd)
+        csd = csd/np.max(np.abs(csd))
         vrange = 1
-    fig=plt.figure(facecolor="white")
-    ax=fig.add_subplot(111)
     x = np.linspace(xlim[0] , xlim[1], len(csd[0]))
     y = np.linspace( depth_range[0]+ch_distance/2, depth_range[1]-ch_distance/2, len(csd))
     X,Y=np.meshgrid(x,y[::-1])
     pcm=ax.pcolormesh(X,Y,csd,cmap="jet", shading="auto",vmax=vrange, vmin=-vrange,rasterized=True)
-    plt.colorbar(pcm,label="[mV/mm$^2$]")
     if is_standardized:
         plt.colorbar(pcm,label="standalized csd")
+    else:
+        plt.colorbar(pcm,label="[mV/mm$^2$]")
+    ax.set_ylim(ylim)
     ax.invert_yaxis()
     ax.set_yticks(np.arange(depth_range[0]+ch_distance,depth_range[1],ch_distance))
     ax.set_ylabel("depth [μm]")
     ax.set_xlabel("time from stimulation [ms]")
+    
+    return fig,ax
+
+def plot_csd(lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=False,depth_range=[0,750],ch_distance= 50,is_standardized=False,ylim=[100,700]):
+    '''
+    inverse:bool 細胞外記録の値にしたい場合にはFalse, 細胞内記録の値にしたい場合にはTrue
+    '''
+    fig=plt.figure(facecolor="white")
+    ax=fig.add_subplot(111)
+    plot_csd_figure(fig,ax,lfp_data,channelmap,xlim,vrange,param,save_fig_dir_name,is_gradient = False,gradient_size = 5,axis=0,inverse=inverse,depth_range=depth_range,ch_distance= ch_distance,is_standardized=is_standardized,ylim=ylim)
     if not(os.path.exists("./csd_fig")):
         os.mkdir("./csd_fig")
     if not(os.path.exists(f"./csd_fig/{save_fig_dir_name}")):
