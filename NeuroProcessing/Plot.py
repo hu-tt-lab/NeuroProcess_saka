@@ -225,7 +225,6 @@ def plot_csd_figure(fig,ax,lfp_data,channelmap,xlim,vrange,is_gradient = False,g
         plt.colorbar(pcm,label="standalized csd")
     else:
         plt.colorbar(pcm,label="[mV/mm$^2$]")
-    ax.set_ylim(ylim)
     ax.invert_yaxis()
     ax.set_yticks(np.arange(depth_range[0]+ch_distance,depth_range[1],ch_distance))
     ax.set_ylabel("depth [μm]")
