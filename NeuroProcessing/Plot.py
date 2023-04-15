@@ -15,6 +15,28 @@ from NeuroProcessing.WaveStats import acquire_zscore_at_one_point
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = 14
 
+def convert_df_series_to_stim_name(order_row):
+    if order_row["state"]=="click":
+        return str(int(order_row["db"]))+"dB"
+    else:
+        if order_row["amp"]==0:
+            return "sham"
+        elif order_row["state"]=="us_burst":
+            amp = order_row["amp"]/10
+            prf = order_row["PRF"]
+            window = int(order_row["window"]*2)
+            duration = order_row["duration"]*1000
+            pd = order_row["pulse_duration"]*1000000
+            freq_khz = order_row["freq"]/1000
+            return f"{amp}V_d_{duration}ms_w_{window}%_f_{freq_khz}kHz_PRF_{prf}Hz_pd_{pd}us"
+        else:
+            amp = order_row["amp"]/10
+            duration = order_row["duration"]*1000
+            window = int(order_row["window"]*2)
+            return f"{amp}V_d_{duration}ms_f_{freq_khz}kHzw_{window}%"
+
+
+
 def plastic_key(key):
     vol=re.search("[0-9]+(\.[0-9]+)*V",key)
     if "sham" in key:
