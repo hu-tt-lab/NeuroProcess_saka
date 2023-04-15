@@ -22,7 +22,7 @@ def convert_df_series_to_stim_name(order_row):
         if order_row["amp"]==0:
             return "sham"
         elif order_row["state"]=="us_burst":
-            amp = order_row["amp"]/10
+            amp = (order_row["amp"]*100)
             prf = order_row["PRF"]
             window = int(order_row["window"]*2)
             duration = order_row["duration"]*1000
@@ -30,7 +30,7 @@ def convert_df_series_to_stim_name(order_row):
             freq_khz = order_row["freq"]/1000
             return f"{amp}V_d_{duration}ms_w_{window}%_f_{freq_khz}kHz_PRF_{prf}Hz_pd_{pd}us"
         else:
-            amp = order_row["amp"]/10
+            amp = int(order_row["amp"]*100)
             duration = order_row["duration"]*1000
             window = int(order_row["window"]*2)
             freq_khz = order_row["freq"]/1000
