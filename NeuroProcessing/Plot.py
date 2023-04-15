@@ -33,7 +33,8 @@ def convert_df_series_to_stim_name(order_row):
             amp = order_row["amp"]/10
             duration = order_row["duration"]*1000
             window = int(order_row["window"]*2)
-            return f"{amp}V_d_{duration}ms_f_{freq_khz}kHzw_{window}%"
+            freq_khz = order_row["freq"]/1000
+            return f"{amp}V_d_{duration}ms_f_{freq_khz}kHz_w_{window}%"
 
 
 
